@@ -103,6 +103,3 @@ public/
 .env.production.local
 
 # End of https://www.gitignore.io/api/node
-
-### Config files ###
-config/

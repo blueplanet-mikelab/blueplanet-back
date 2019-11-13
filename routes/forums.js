@@ -1,18 +1,15 @@
 const express = require('express')
 const router = express.Router()
 
-let Forum = require('../models/forum');
+require('dotenv').config()
+const db = require('monk')(process.env.MONGODB_URI, { authSource: 'admin' })
+const collection = db.get(process.env.MONGODB_COLLECTION)
 
-router.get('/', (req, res) => {
-    res.send('Test from Forums route')
-    // Forum.find((err, forums) => {
-    //     if (err) {
-    //         console.log(err) 
-    //     }
-    //     else {
-    //         res.json(forums) 
-    //     }
-    // })
+router.get('/', async (req, res) => {
+    collection
+        .find()
+        .then(forum => res.json(forum))
+        .catch(err => res.status(500).send({ message: err.message }))
 })
 
 module.exports = router
