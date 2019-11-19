@@ -7,7 +7,7 @@ const collection = db.get(process.env.MONGODB_COLLECTION)
 
 router.get('/', async (req, res) => {
     collection
-        .find()
+        .find({}, { limit: 20 })
         .then(forum => res.json(forum))
         .catch(err => res.status(500).send({ message: err.message }))
 })
