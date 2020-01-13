@@ -69,7 +69,7 @@ const pipeline = function(conds) {
                     "$eq": true
                 },
                 "m_filter": {
-                    "$ne": []
+                    "$nin": [[], null]
                 },
                 "t_filter": {
                     "$nin": [[], false]
@@ -234,7 +234,7 @@ router.post('/filter', function(req, res){
                     "$eq": true
                 },
                 "m_filter": {
-                    "$ne": []
+                    "$nin": [[], null]
                 },
                 "t_filter": {
                     "$nin": [[], false]
