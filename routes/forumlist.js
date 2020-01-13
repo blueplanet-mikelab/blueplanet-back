@@ -344,6 +344,7 @@ function getCondition(queryString){
     conds.budgetMax = queryString.budget_max ? parseInt(queryString.budget_max): 50000;
     conds.resultPage = queryString.result_page ? parseInt(queryString.result_page): 1;
     conds.sortby = queryString.sortby ? queryString.sortby: 'popular';
+    console.log(conds.budgetMin, conds.budgetMax, conds.resultPage, conds.sortby)
 
     return conds
 }
