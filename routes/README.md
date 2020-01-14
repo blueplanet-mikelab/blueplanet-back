@@ -1,9 +1,9 @@
 # Routes Documents
 ## 1. ForunList page
 ### 1. GET /forumlistQuery?
-get threads both with or without threads
+get threads both with or without filters
 
-##### Request
+#### Request
 **QueryString:**
 - countries: ["Taiwan", "Thailand"]
 - durations: ["1-3Days", "4-6Days", "7-9Days","10-12Days","Morethan12Days"]
@@ -18,7 +18,7 @@ get threads both with or without threads
     - newest
     - oldest
 
-##### Response
+#### Response
 **Header**
 - 'Content-Type' : 'application/json'
 
@@ -56,7 +56,7 @@ get threads both with or without threads
 - "popularity" : 56.4780824434962,
 - "created_at" : ISODate("2019-08-15T12:48:08.366Z")
 
-##### default query value if it isn't exists
+#### default query value if it isn't exists
 - countries: true
 - durations: true
 - months: true
