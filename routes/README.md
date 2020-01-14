@@ -1,14 +1,28 @@
 # Routes Documents
-### 1. /forumlist/all/:sortby/:page
-response all docs as sorted and arrange by the number of the page
+## 1. ForunList page
+### 1. GET /forumlistQuery?
+get threads both with or without threads
 
-**Request:** no body request but there are 2 params `sortby` and `page`<br>
-**Response:**
+##### Request
+**QueryString:**
+- countries: ["Taiwan", "Thailand"]
+- durations: ["1-3Days", "4-6Days", "7-9Days","10-12Days","Morethan12Days"]
+- months: ["August", "October"]
+- themes: ["Mountain","Historical","Sightseeing"]
+- budget_min: 0
+- budget_max: 10000
+- result_page: 1 (start from 1)
+- sortby: 4 values available
+    - upvoted
+    - popular
+    - newest
+    - oldest
 
-Header
+##### Response
+**Header**
 - 'Content-Type' : 'application/json'
 
-Body: list of documents
+**Body: list of documents**
 - "_id" : ObjectId("..."),
 - "topic_id" : 39xxxxxx.0,
 - "title" : "Title",
@@ -42,26 +56,14 @@ Body: list of documents
 - "popularity" : 56.4780824434962,
 - "created_at" : ISODate("2019-08-15T12:48:08.366Z")
 
-### 2. /forumlist/filter
-selecting docs using filter from the web
-**Request:** <br>
-Header
-- 'Content-Type' : 'application/json'
-
-Body:
-- countries: ["Taiwan", "Thailand"]
-- duration: ["1-3Days", "4-6Days", "7-9Days","10-12Days","Morethan12Days"]
-- month: ["August", "October"]
-- theme: ["Mountain","Historical","Sightseeing"]
+##### default query value if it isn't exists
+- countries: true
+- durations: true
+- months: true
+- themes: true
 - budget_min: 0
-- budget_max: 10000
-- result_page: 1 (start from 1)
-- sortby: 4 values available
-    - upvoted
-    - popular
-    - newest
-    - oldest
+- budget_max: 50000
+- result_page: 1
+- sortby: popular
 
 
-**Response:**
-the same as the first routes (just have more filter conditions)
