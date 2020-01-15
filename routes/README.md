@@ -1,6 +1,6 @@
 # Routes Documents
 ## 1. ForunList page
-### 1. GET /forumlistQuery?
+### 1. GET forumList/filterQuery?
 get threads both with or without filters
 
 #### Request
@@ -66,4 +66,44 @@ get threads both with or without filters
 - result_page: 1
 - sortby: popular
 
+## 2. Home Page
+### 1. GET home/durationQuery?
+get threads based on selected duration
 
+#### Request
+**QueryString:**
+- durations: ["1-3Days", "4-6Days", "7-9Days","10-12Days","Morethan12Days"]
+- within_th: true
+
+#### Response
+**Header**
+- 'Content-Type' : 'application/json'
+
+**Body: list of documents**
+- "_id" : ObjectId("..."),
+- "topic_id" : 39xxxxxx.0,
+- "title" : "Title",
+- "thumbnail" : "https://xxxx.jpg",
+- "duration" : {
+    - "days" : 4,
+    - "label" : "4 Days"
+    },
+
+### 2. GET home/monthQuery?
+get threads based on selected month
+
+#### Request
+**QueryString:**
+- months: ["August", "October"]
+- within_th: true
+
+#### Response
+**Header**
+- 'Content-Type' : 'application/json'
+
+**Body: list of documents**
+- "_id" : ObjectId("..."),
+- "topic_id" : 39xxxxxx.0,
+- "title" : "Title",
+- "thumbnail" : "https://xxxx.jpg",
+- "month" : [ "August", ... ],
