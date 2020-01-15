@@ -1,6 +1,6 @@
 # Routes Documents
 ## 1. ForunList page
-### 1. GET forumList/filterQuery?
+### 1. GET forums/filterQuery?
 get threads both with or without filters
 
 #### Request
