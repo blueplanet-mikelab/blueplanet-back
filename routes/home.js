@@ -6,8 +6,10 @@ const db = require('monk')(process.env.MONGODB_URI, {
     authSource: 'admin'
 })
 const treads_col = db.get(process.env.MONGODB_COLLECTION)
+const countries_col = db.get(process.env.MONGODB_MAP_COLLECTION)
 
-const pipeline = function(conds) {
+
+const durationPipeline = function(conds) {
     return [{
             $addFields: {
                 "th_selected": {
@@ -87,13 +89,17 @@ function getDurationConds(queryString) {
     return conds
 }
 
-function getMonthQueryConds(queryString) {
-    var month = queryString.months;
-}
+// function getMonthQueryConds(queryString) {
+//     var month = queryString.months;
+// }(
+
+router.get('/mapCountries', function(req, res) {
+    countries_col.find().then((doc) => { res.send(doc) })
+})
 
 router.get('/durationQuery', function(req, res) {
     durationConds = getDurationConds(req.query)
-    treads_col.aggregate(pipeline(durationConds)).then((doc) => {
+    treads_col.aggregate(durationPipeline(durationConds)).then((doc) => {
         res.send(doc);
     })
 })
