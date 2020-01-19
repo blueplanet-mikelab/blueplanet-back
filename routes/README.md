@@ -8,7 +8,7 @@ get threads both with or without filters
 - countries: ["Taiwan", "Thailand"]
 - durations: ["1-3Days", "4-6Days", "7-9Days","10-12Days","Morethan12Days"]
 - months: ["August", "October"]
-- themes: ["Mountain","Historical","Sightseeing"]
+- themes: ["Mountain", "Historical", "Sightseeing"]
 - budget_min: 0
 - budget_max: 10000
 - result_page: 1 (start from 1)
@@ -67,13 +67,30 @@ get threads both with or without filters
 - sortby: popular
 
 ## 2. Home Page
-### 1. GET home/durationQuery?
-get threads based on selected duration
+### 1. GET home/mapCountries
+get countries' name along with its latitude and longitude (ranking in future)
+
+### Response
+**Header**
+- 'Content-Type' : 'application/json'
+
+**Body: list of documents**
+- "_id": "5e204a2750510dcbd1a4c722",
+- "country": "AF",
+- "latitude": 33.93911,
+- "longitude": 67.709953,
+- "nameEnglish": "Afghanistan",
+- "nameThai": [
+    "อัฟกานิสถาน"
+]
+
+### 2. GET home/durationQuery?
+get threads based on selected duration and the country area
 
 #### Request
 **QueryString:**
 - durations: ["1-3Days", "4-6Days", "7-9Days","10-12Days","Morethan12Days"]
-- within_th: true
+- within_th: 0
 
 #### Response
 **Header**
@@ -89,13 +106,13 @@ get threads based on selected duration
     - "label" : "4 Days"
     },
 
-### 2. GET home/monthQuery?
-get threads based on selected month
+### 3. GET home/monthQuery?
+get threads based on selected month and the country area
 
 #### Request
 **QueryString:**
 - months: ["August", "October"]
-- within_th: true
+- within_th: 0
 
 #### Response
 **Header**
@@ -106,4 +123,4 @@ get threads based on selected month
 - "topic_id" : 39xxxxxx.0,
 - "title" : "Title",
 - "thumbnail" : "https://xxxx.jpg",
-- "month" : [ "August", ... ],
+- "month" : "August"
