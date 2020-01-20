@@ -89,7 +89,7 @@ get threads based on selected duration and the country area
 
 #### Request
 **QueryString:**
-- durations: ["1-3Days", "4-6Days", "7-9Days","10-12Days","Morethan12Days"]
+- duration: "1-3Days"
 - within_th: 0
 
 #### Response
@@ -105,13 +105,17 @@ get threads based on selected duration and the country area
     - "days" : 4,
     - "label" : "4 Days"
     },
+- "month": [
+    - "February",
+    - "July"
+    ]
 
 ### 3. GET home/monthQuery?
 get threads based on selected month and the country area
 
 #### Request
 **QueryString:**
-- months: ["August", "October"]
+- months: "August"
 - within_th: 0
 
 #### Response
@@ -123,4 +127,7 @@ get threads based on selected month and the country area
 - "topic_id" : 39xxxxxx.0,
 - "title" : "Title",
 - "thumbnail" : "https://xxxx.jpg",
-- "month" : "August"
+- "month": [
+    - "February",
+    - "July"
+    ]
