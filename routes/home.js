@@ -8,6 +8,13 @@ const db = require('monk')(process.env.MONGODB_URI, {
 const treads_col = db.get(process.env.MONGODB_COLLECTION)
 const countries_col = db.get(process.env.MONGODB_MAP_COLLECTION)
 
+const thread_res = {
+    "topic_id": 1,
+    "title": 1,
+    "thumbnail": 1,
+    "duration": 1,
+    "month": 1
+}
 
 const durationPipeline = function(conds) {
     return [{
@@ -40,12 +47,7 @@ const durationPipeline = function(conds) {
             }
         },
         {
-            $project: {
-                "topic_id": 1,
-                "title": 1,
-                "thumbnail": 1,
-                "duration": 1
-            }
+            $project: thread_res
         },
         {
             $limit: 12
@@ -53,11 +55,54 @@ const durationPipeline = function(conds) {
     ]
 }
 
-function getDurationConds(queryString) {
-    var conds = {}
+const monthPipeline = function(conds) {
+    return [{
+            $addFields: {
+                "th_selected": {
+                    $filter: {
+                        input: "$countries",
+                        as: "country",
+                        cond: {
+                            "$eq": ["$$country.country", "TH"]
+                        }
+                    }
+                },
+                "m_selected": {
+                    $filter: {
+                        input: "$month",
+                        as: "mon",
+                        cond: {
+                            $or: conds.month
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "$match": {
+                "$and": [{
+                        "th_selected": conds.within_th
+                    },
+                    {
+                        "m_selected": {
+                            "$nin": [
+                                [], null
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $project: thread_res
+        },
+        {
+            $limit: 12
+        }
+    ]
+}
 
-    // Within_th
-    var within_th = queryString.within_th
+function getWithinThConds(within_th) {
     if (parseInt(within_th) == 1) {
         within_th_selected = {
             "$ne": []
@@ -67,21 +112,35 @@ function getDurationConds(queryString) {
             "$eq": []
         }
     }
-    conds.within_th = within_th_selected
+    return within_th_selected
+}
 
-    // Duration
+function getDurationConds(queryString) {
+    var conds = {}
+    conds.within_th = getWithinThConds(queryString.within_th)
+
     var duration = queryString.duration
-    parts = duration.replace(/\s+/g, "").match(/(than|\d+)-*(\d+)Days/)
-    if (parts[1] == "than") {
-        duration_selected = {
-            "$gt": ["$duration.days", 12]
+    if (duration) {
+        parts = duration.replace(/\s+/g, "").match(/(than|\d+)-*(\d+)Days/)
+        if (parts[1] == "than") {
+            duration_selected = {
+                "$gt": ["$duration.days", 12]
+            }
+        } else {
+            duration_selected = {
+                "$and": [{
+                    "$gte": ["$duration.days", parseInt(parts[1])]
+                }, {
+                    "$lte": ["$duration.days", parseInt(parts[2])]
+                }]
+            }
         }
     } else {
         duration_selected = {
             "$and": [{
-                "$gte": ["$duration.days", parseInt(parts[1])]
+                "$gte": ["$duration.days", 1]
             }, {
-                "$lte": ["$duration.days", parseInt(parts[2])]
+                "$lte": ["$duration.days", 3]
             }]
         }
     }
@@ -89,23 +148,40 @@ function getDurationConds(queryString) {
     return conds
 }
 
-// function getMonthQueryConds(queryString) {
-//     var month = queryString.months;
-// }(
+function getMonthQueryConds(queryString) {
+    var conds = {}
+    conds.within_th = getWithinThConds(queryString.within_th)
+
+    var month = queryString.month
+    if (month) {
+        month_selected = {
+            "$eq": ["$$mon", month]
+        }
+    } else {
+        month_selected = true
+    }
+    conds.month = month_selected
+    return conds
+}
 
 router.get('/mapCountries', function(req, res) {
-    countries_col.find().then((doc) => { res.send(doc) })
+    countries_col.find().then((doc) => {
+        res.send(doc)
+    })
 })
 
 router.get('/durationQuery', function(req, res) {
     durationConds = getDurationConds(req.query)
     treads_col.aggregate(durationPipeline(durationConds)).then((doc) => {
-        res.send(doc);
+        res.send(doc)
     })
 })
 
 router.get('/monthQuery', function(req, res) {
     monthConds = getMonthQueryConds(req.query)
+    treads_col.aggregate(monthPipeline(monthConds)).then((doc) => {
+        res.send(doc)
+    })
 })
 
 module.exports = router
