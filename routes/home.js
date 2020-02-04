@@ -13,7 +13,8 @@ const thread_res = {
     "title": 1,
     "thumbnail": 1,
     "duration": 1,
-    "month": 1
+    "month": 1,
+    "countries": 1
 }
 
 const durationPipeline = function(conds) {
