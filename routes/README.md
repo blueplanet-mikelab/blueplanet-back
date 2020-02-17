@@ -36,12 +36,12 @@ get threads both with or without filters
     - "nameThai" : [  "ไต้หวัน" ] <br>
         }, ....
     ],
+- "duration_type": 1,
 - "duration" : {
     - "days" : 4,
     - "label" : "4 Days"
     },
 - "month" : [ "August", ... ],
-- "season" : "",
 - "theme" : [ 
         { //at most 4 themes
     - "theme" : "Eatting",
@@ -127,7 +127,18 @@ get threads based on selected month and the country area
 - "topic_id" : 39xxxxxx.0,
 - "title" : "Title",
 - "thumbnail" : "https://xxxx.jpg",
-- "month": [
-    - "February",
-    - "July"
-    ]
+- "countries" : [ 
+        {
+    - "country" : "TW",
+    - "latitude" : 23.69781,
+    - "longitude" : 120.960515,
+    - "nameEnglish" : "Taiwan",
+    - "nameThai" : [  "ไต้หวัน" ] <br>
+        }, ....
+    ],
+- "duration_type": 1,
+- "duration" : {
+    - "days" : 4,
+    - "label" : "4 Days"
+    },
+- "month" : [ "August", ... ],
