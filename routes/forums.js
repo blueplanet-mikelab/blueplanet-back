@@ -132,31 +132,56 @@ function getCondition(queryString) {
     conds.countryFilter = c_filter
 
     // DURATION
-    var duration = queryString.durations; //array of string ["1-3Days", "4-6Days", "7-9Days","10-12Days","Morethan12Days"]
+    var duration = queryString.duration_type // int { 1, 2, 3, 4, 5 }
     var d_filter = []
     console.log("duration:", duration)
     if (duration != null) {
-        duration.split(',').forEach(label => {
-            parts = label.replace(/\s+/g, "").match(/(than|\d+)-*(\d+)Days/)
-            if (parts[1] == "than") {
+        switch (parseInt(duration)) {
+            case 1:
                 d_filter.push({
                     "$and": [{
-                        "$gt": ["$duration.days", 12]
-                    }]
-                })
-            } else {
-                d_filter.push({
-                    "$and": [{
-                        "$gte": ["$duration.days", parseInt(parts[1])]
+                        "$gte": ["$duration.days", 1]
                     }, {
-                        "$lte": ["$duration.days", parseInt(parts[2])]
+                        "$lte": ["$duration.days", 3]
                     }]
                 })
-            }
-        });
-    } else { //suggest
+                break;
+            case 2:
+                d_filter.push({
+                    "$and": [{
+                        "$gte": ["$duration.days", 4]
+                    }, {
+                        "$lte": ["$duration.days", 6]
+                    }]
+                })
+                break;
+            case 3:
+                d_filter.push({
+                    "$and": [{
+                        "$gte": ["$duration.days", 7]
+                    }, {
+                        "$lte": ["$duration.days", 9]
+                    }]
+                })
+                break;
+            case 4:
+                d_filter.push({
+                    "$and": [{
+                        "$gte": ["$duration.days", 10]
+                    }, {
+                        "$lte": ["$duration.days", 12]
+                    }]
+                })
+                break;
+            case 5:
+                d_filter.push({
+                    "$gt": ["$duration.days", 12]
+                })
+                break;
+        }
+    } else { // suggest for now
         d_filter.push({
-            "$eq": ["$duration.days", 0]
+            "$eq": ["$duration.days", 1]
         })
     }
     conds.durationFilter = d_filter
@@ -217,9 +242,9 @@ router.get('/filterQuery', function(req, res) {
     console.log('Query:', req.query)
     conds = getCondition(req.query)
     treads_col.aggregate(pipeline(conds)).then((doc) => {
-        // console.log(doc)
         res.send(doc);
     })
+    // treads_col.find({}).then((docs) => { res.send(docs) }).limit(10)
 });
 
 module.exports = router
