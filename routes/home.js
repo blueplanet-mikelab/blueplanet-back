@@ -121,31 +121,74 @@ function getDurationConds(queryString) {
     var conds = {}
     conds.within_th = getWithinThConds(queryString.within_th)
 
-    var duration = queryString.duration
-    if (duration) {
-        parts = duration.replace(/\s+/g, "").match(/(than|\d+)-*(\d+)Days/)
-        if (parts[1] == "than") {
+    var duration = queryString.duration_type
+    switch (parseInt(duration)) {
+        case 1:
+            duration_selected = {
+                "$and": [{
+                    "$gte": ["$duration.days", 1]
+                }, {
+                    "$lte": ["$duration.days", 3]
+                }]
+            }
+            break;
+        case 2:
+            duration_selected = {
+                "$and": [{
+                    "$gte": ["$duration.days", 4]
+                }, {
+                    "$lte": ["$duration.days", 6]
+                }]
+            }
+            break;
+        case 3:
+            duration_selected = {
+                "$and": [{
+                    "$gte": ["$duration.days", 7]
+                }, {
+                    "$lte": ["$duration.days", 9]
+                }]
+            }
+            break;
+        case 4:
+            duration_selected = {
+                "$and": [{
+                    "$gte": ["$duration.days", 10]
+                }, {
+                    "$lte": ["$duration.days", 12]
+                }]
+            }
+            break;
+        case 5:
             duration_selected = {
                 "$gt": ["$duration.days", 12]
             }
-        } else {
+            break;
+        default:
             duration_selected = {
                 "$and": [{
-                    "$gte": ["$duration.days", parseInt(parts[1])]
+                    "$gte": ["$duration.days", 1]
                 }, {
-                    "$lte": ["$duration.days", parseInt(parts[2])]
+                    "$lte": ["$duration.days", 3]
                 }]
             }
-        }
-    } else {
-        duration_selected = {
-            "$and": [{
-                "$gte": ["$duration.days", 1]
-            }, {
-                "$lte": ["$duration.days", 3]
-            }]
-        }
+            break;
     }
+
+        // parts = duration.replace(/\s+/g, "").match(/(than|\d+)-*(\d+)Days/)
+        // if (parts[1] == "than") {
+        //     duration_selected = {
+        //         "$gt": ["$duration.days", 12]
+        //     }
+        // } else {
+        //     duration_selected = {
+        //         "$and": [{
+        //             "$gte": ["$duration.days", parseInt(parts[1])]
+        //         }, {
+        //             "$lte": ["$duration.days", parseInt(parts[2])]
+        //         }]
+        //     }
+        // }
     conds.duration = duration_selected
     return conds
 }

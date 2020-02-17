@@ -89,7 +89,7 @@ get threads based on selected duration and the country area
 
 #### Request
 **QueryString:**
-- duration: "1-3Days"
+- duration_type: 1
 - within_th: 0
 
 #### Response
