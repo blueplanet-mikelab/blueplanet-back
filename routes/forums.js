@@ -108,7 +108,7 @@ const pipeline = function(conds) {
             $skip: 10 * conds.resultPage
         },
         {
-            $limit: 10
+            $limit: 50
         }
         // ,{ $count: "count" }
     ]
@@ -156,7 +156,7 @@ function getCondition(queryString) {
         });
     } else { //suggest
         d_filter.push({
-            "$eq": ["$duration.days", 0]
+            "$eq": ["$duration.days", 1]
         })
     }
     conds.durationFilter = d_filter
