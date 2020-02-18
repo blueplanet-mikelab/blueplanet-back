@@ -86,11 +86,13 @@ const pipeline = function (conds) {
       "topic_id": 1,
       "title": 1,
       "thumbnail": 1,
+      "countries": 1,
       "duration": 1,
       "duration_type" : 1,
       "floorBudget": {
         $floor: "$budget"
       },
+      "theme": 1,
       "vote": 1,
       "popularity": {
         $floor: "$viewvotecom_per_day"
@@ -101,7 +103,7 @@ const pipeline = function (conds) {
     $skip: 10 * conds.resultPage
   },
   {
-    $limit: 10
+    $limit: 50
   }
     // ,{ $count: "count" }
   ]
