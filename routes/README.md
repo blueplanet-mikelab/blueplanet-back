@@ -23,38 +23,18 @@ get threads both with or without filters
 - 'Content-Type' : 'application/json'
 
 **Body: list of documents**
-- "_id" : ObjectId("..."),
-- "topic_id" : 39xxxxxx.0,
-- "title" : "Title",
-- "thumbnail" : "https://xxxx.jpg",
-- "countries" : [ 
-        {
-    - "country" : "TW",
-    - "latitude" : 23.69781,
-    - "longitude" : 120.960515,
-    - "nameEnglish" : "Taiwan",
-    - "nameThai" : [  "ไต้หวัน" ] <br>
-        }, ....
-    ],
+- "_id": "5e16db7d3c0dffa34b664031",
+- "topic_id": 37953737,
+- "title": "Unseen Switzerland 2018 ฉบับลุงหมอขอพักร้อน ตอน \"ตามหาโคมไฟดวงเล็กๆ ในฤดูร้อน\"",
+- "thumbnail": "https://f.ptcdn.info/145/059/000/pddu7l42dTi191bx4C3-o.jpg",
 - "duration_type": 1,
-- "duration" : {
-    - "days" : 4,
-    - "label" : "4 Days"
-    },
-- "month" : [ "August", ... ],
-- "theme" : [ 
-        { //at most 4 themes
-    - "theme" : "Eatting",
-    - "count" : 96 <br>
-        }, 
-        ..
-    ],
-- "budget" : 9423,
-- "totalView" : 5752,
-- "totalVote" : 1,
-- "totalComment" : 10,
-- "popularity" : 56.4780824434962,
-- "created_at" : ISODate("2019-08-15T12:48:08.366Z")
+-  "duration": {
+      "days": 1,
+      "label": "1 Day"
+  },
+- "vote": 23,
+- "viewvotecom_per_day": 44.60013891343946,
+- "floorBudget": 38498
 
 #### default query value if it isn't exists
 - countries: true
