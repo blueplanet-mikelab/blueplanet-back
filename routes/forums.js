@@ -18,6 +18,7 @@ function selectSorting(sortby) {
 const pipeline = function (conds) {
   return [{
     $addFields: {
+      "t_filter": conds.typeFilter,
       "c_filter": {
         $filter: {
           input: "$countries",
@@ -27,9 +28,7 @@ const pipeline = function (conds) {
           }
         }
       },
-      "d_filter": {
-        $or: conds.durationFilter
-      },
+      "d_filter": conds.durationFilter,
       "m_filter": {
         $filter: {
           input: "$month",
@@ -39,7 +38,7 @@ const pipeline = function (conds) {
           }
         }
       },
-      "t_filter": conds.themeFilter,
+      "th_filter": conds.themeFilter,
       "b_filter": {
         $or: [{
           $and: [{
@@ -56,6 +55,9 @@ const pipeline = function (conds) {
   },
   {
     $match: {
+      "t_filter": {
+        "$ne": []
+      },
       "c_filter": {
         "$ne": []
       },
@@ -67,7 +69,7 @@ const pipeline = function (conds) {
           [], null
         ]
       },
-      "t_filter": {
+      "th_filter": {
         "$nin": [
           [], false
         ]
@@ -90,7 +92,9 @@ const pipeline = function (conds) {
         $floor: "$budget"
       },
       "vote": 1,
-      "viewvotecom_per_day": 1
+      "popularity": {
+        $floor: "$viewvotecom_per_day"
+      }
     }
   },
   {
@@ -105,6 +109,26 @@ const pipeline = function (conds) {
 
 function getCondition(queryString) {
   conds = {}
+
+  // Type
+  var type = queryString.type; 
+  var t_filter = {}
+  if (type) {
+    if (type == "review") {
+      t_filter = {
+        "$ne": ["$duration_type", null]
+      }
+    } else if (type == "suggest") {
+      t_filter = {
+        "$eq": ["$duration_type", null]
+      }
+    }
+  } else {
+    t_filter = {
+      "$ne": ["$duration_type", null]
+    }
+  }
+  conds.typeFilter = t_filter
 
   // Country
   var countries = queryString.countries; //array of string ["Thailand","Singapore"]
@@ -123,56 +147,62 @@ function getCondition(queryString) {
 
   // Duration
   var duration = queryString.duration_type // int { 1, 2, 3, 4, 5 }
-  var d_filter = []
+  var d_filter = {}
   console.log("duration:", duration)
-  if (duration != null) {
+  if (duration) {
     switch (parseInt(duration)) {
       case 1:
-        d_filter.push({
+        d_filter = {
           "$and": [{
             "$gte": ["$duration.days", 1]
           }, {
             "$lte": ["$duration.days", 3]
           }]
-        })
+        }
         break;
       case 2:
-        d_filter.push({
+        d_filter = {
           "$and": [{
             "$gte": ["$duration.days", 4]
           }, {
             "$lte": ["$duration.days", 6]
           }]
-        })
+        }
         break;
       case 3:
-        d_filter.push({
+        d_filter = {
           "$and": [{
             "$gte": ["$duration.days", 7]
           }, {
             "$lte": ["$duration.days", 9]
           }]
-        })
+        }
         break;
       case 4:
-        d_filter.push({
+        d_filter = {
           "$and": [{
             "$gte": ["$duration.days", 10]
           }, {
             "$lte": ["$duration.days", 12]
           }]
-        })
+        }
         break;
       case 5:
-        d_filter.push({
+        d_filter = {
           "$gt": ["$duration.days", 12]
-        })
+        }
         break;
     }
-  } else { // suggest for now
-    d_filter.push({
-      "$eq": ["$duration.days", 1]
-    })
+  } else {
+    if (!type || type === "review") {
+      d_filter = {
+        "$eq": ["$duration.days", 1]
+      }
+    } else {
+      d_filter = {
+        "$eq": ["$duration.days", null]
+      }
+    }
   }
   conds.durationFilter = d_filter
 
@@ -201,7 +231,7 @@ function getCondition(queryString) {
         $eq: ["$$theme.theme", theme]
       })
     })
-    t_filter = {
+    th_filter = {
       $filter: {
         input: "$theme",
         as: "theme",
@@ -211,13 +241,13 @@ function getCondition(queryString) {
       }
     }
   } else if (theme == "etc") {
-    t_filter = {
+    th_filter = {
       $eq: ["$theme", []]
     } // if theme == etc select theme:[]
   } else {
-    t_filter = true // if theme == null not filter theme, 
+    th_filter = true // if theme == null not filter theme, 
   }
-  conds.themeFilter = t_filter
+  conds.themeFilter = th_filter
 
   conds.budgetMin = queryString.budget_min ? parseInt(queryString.budget_min) : 0;
   conds.budgetMax = queryString.budget_max ? parseInt(queryString.budget_max) : 50000;

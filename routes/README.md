@@ -5,6 +5,7 @@ get threads both with or without filters
 
 #### Request
 **QueryString:**
+- type: review
 - countries: ["Taiwan", "Thailand"]
 - duration_type: 1
 - months: ["August", "October"]
@@ -13,10 +14,10 @@ get threads both with or without filters
 - budget_max: 10000
 - result_page: 1 (start from 1)
 - sortby: 4 values available
-    - upvoted
-    - popular
-    - newest
-    - oldest
+  - upvoted
+  - popular
+  - newest
+  - oldest
 
 #### Response
 **Header**
@@ -33,7 +34,7 @@ get threads both with or without filters
       "label": "1 Day"
   },
 - "vote": 23,
-- "viewvotecom_per_day": 44.60013891343946,
+- "popularity": 44,
 - "floorBudget": 38498
 
 #### default query value if it isn't exists
