@@ -5,56 +5,37 @@ get threads both with or without filters
 
 #### Request
 **QueryString:**
+- type: review
 - countries: ["Taiwan", "Thailand"]
-- durations: ["1-3Days", "4-6Days", "7-9Days","10-12Days","Morethan12Days"]
+- duration_type: 1
 - months: ["August", "October"]
 - themes: ["Mountain", "Historical", "Sightseeing"]
 - budget_min: 0
 - budget_max: 10000
 - result_page: 1 (start from 1)
 - sortby: 4 values available
-    - upvoted
-    - popular
-    - newest
-    - oldest
+  - upvoted
+  - popular
+  - newest
+  - oldest
 
 #### Response
 **Header**
 - 'Content-Type' : 'application/json'
 
 **Body: list of documents**
-- "_id" : ObjectId("..."),
-- "topic_id" : 39xxxxxx.0,
-- "title" : "Title",
-- "thumbnail" : "https://xxxx.jpg",
-- "countries" : [ 
-        {
-    - "country" : "TW",
-    - "latitude" : 23.69781,
-    - "longitude" : 120.960515,
-    - "nameEnglish" : "Taiwan",
-    - "nameThai" : [  "ไต้หวัน" ] <br>
-        }, ....
-    ],
+- "_id": "5e16db7d3c0dffa34b664031",
+- "topic_id": 37953737,
+- "title": "Unseen Switzerland 2018 ฉบับลุงหมอขอพักร้อน ตอน \"ตามหาโคมไฟดวงเล็กๆ ในฤดูร้อน\"",
+- "thumbnail": "https://f.ptcdn.info/145/059/000/pddu7l42dTi191bx4C3-o.jpg",
 - "duration_type": 1,
-- "duration" : {
-    - "days" : 4,
-    - "label" : "4 Days"
-    },
-- "month" : [ "August", ... ],
-- "theme" : [ 
-        { //at most 4 themes
-    - "theme" : "Eatting",
-    - "count" : 96 <br>
-        }, 
-        ..
-    ],
-- "budget" : 9423,
-- "totalView" : 5752,
-- "totalVote" : 1,
-- "totalComment" : 10,
-- "popularity" : 56.4780824434962,
-- "created_at" : ISODate("2019-08-15T12:48:08.366Z")
+-  "duration": {
+      "days": 1,
+      "label": "1 Day"
+  },
+- "vote": 23,
+- "popularity": 44,
+- "floorBudget": 38498
 
 #### default query value if it isn't exists
 - countries: true
@@ -101,14 +82,21 @@ get threads based on selected duration and the country area
 - "topic_id" : 39xxxxxx.0,
 - "title" : "Title",
 - "thumbnail" : "https://xxxx.jpg",
+- "countries" : [ 
+        {
+    - "country" : "TW",
+    - "latitude" : 23.69781,
+    - "longitude" : 120.960515,
+    - "nameEnglish" : "Taiwan",
+    - "nameThai" : [  "ไต้หวัน" ] <br>
+        }, ....
+    ],
+- "duration_type": 1,
 - "duration" : {
     - "days" : 4,
     - "label" : "4 Days"
     },
-- "month": [
-    - "February",
-    - "July"
-    ]
+- "month" : [ "August", ... ]
 
 ### 3. GET home/monthQuery?
 get threads based on selected month and the country area
