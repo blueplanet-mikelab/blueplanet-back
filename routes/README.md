@@ -5,7 +5,9 @@ get threads both with or without filters
 
 #### Request
 **QueryString:**
-- type: review
+- type 2 values available
+  - review
+  - suggest
 - countries: ["Taiwan", "Thailand"]
 - duration_type: 1
 - months: ["August", "October"]
@@ -33,9 +35,12 @@ get threads both with or without filters
       "days": 1,
       "label": "1 Day"
   },
-- "vote": 23,
-- "popularity": 44,
-- "floorBudget": 38498
+- "theme": 1,
+- "view": 3409,
+- "vote": 3,
+- "created_at": "2019-07-27T23:00:08.000Z",
+- "floorBudget": 10000,
+- "popularity": 17
 
 #### default query value if it isn't exists
 - countries: true
@@ -65,7 +70,39 @@ get countries' name along with its latitude and longitude (ranking in future)
     "อัฟกานิสถาน"
 ]
 
-### 2. GET home/durationQuery?
+### 2. GET home/suggestThreads
+get suggestion threads which duration is not undefined by the creator
+
+#### Request
+**QueryString:**
+- within_th: 0
+
+#### Response
+**Header**
+- 'Content-Type' : 'application/json'
+
+**Body: list of documents**
+- "_id" : ObjectId("..."),
+- "topic_id" : 39xxxxxx.0,
+- "title" : "Title",
+- "thumbnail" : "https://xxxx.jpg",
+- "countries" : [ 
+        {
+    - "country" : "TW",
+    - "latitude" : 23.69781,
+    - "longitude" : 120.960515,
+    - "nameEnglish" : "Taiwan",
+    - "nameThai" : [  "ไต้หวัน" ] <br>
+        }, ....
+    ],
+- "duration_type": null,
+- "duration" : {
+    - "days" : null,
+    - "label" : "Not Define"
+    },
+- "month" : [ "August", ... ]
+
+### 3. GET home/durationQuery?
 get threads based on selected duration and the country area
 
 #### Request
@@ -98,7 +135,7 @@ get threads based on selected duration and the country area
     },
 - "month" : [ "August", ... ]
 
-### 3. GET home/monthQuery?
+### 4. GET home/monthQuery?
 get threads based on selected month and the country area
 
 #### Request

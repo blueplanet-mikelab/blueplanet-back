@@ -8,7 +8,7 @@ const db = require('monk')(process.env.MONGODB_URI, {
 const treads_col = db.get(process.env.MONGODB_COLLECTION)
 
 function selectSorting(sortby) {
-  if (sortby == "upvoted") return { "totalVote": -1 }
+  if (sortby == "upvoted") return { "vote": -1 }
   else if (sortby == "popular") return { "popularity": -1 }
   else if (sortby == "newest") return { "created_at": -1 }
   else if (sortby == "oldest") return { "created_at": 1 }
@@ -93,10 +93,12 @@ const pipeline = function (conds) {
         $floor: "$budget"
       },
       "theme": 1,
+      "view": 1,
       "vote": 1,
       "popularity": {
         $floor: "$viewvotecom_per_day"
-      }
+      },
+      "created_at": 1
     }
   },
   {
@@ -104,9 +106,7 @@ const pipeline = function (conds) {
   },
   {
     $limit: 50
-  }
-    // ,{ $count: "count" }
-  ]
+  }]
 }
 
 function getCondition(queryString) {
@@ -115,17 +115,11 @@ function getCondition(queryString) {
   // Type
   var type = queryString.type; 
   var t_filter = {}
-  if (type) {
-    if (type == "review") {
-      t_filter = {
-        "$ne": ["$duration_type", null]
-      }
-    } else if (type == "suggest") {
-      t_filter = {
-        "$eq": ["$duration_type", null]
-      }
+  if (type == "suggest") {
+    t_filter = {
+      "$eq": ["$duration_type", null]
     }
-  } else {
+  } else { // null query or review
     t_filter = {
       "$ne": ["$duration_type", null]
     }
@@ -133,7 +127,7 @@ function getCondition(queryString) {
   conds.typeFilter = t_filter
 
   // Country
-  var countries = queryString.countries; //array of string ["Thailand","Singapore"]
+  var countries = queryString.countries; // array of string ["Thailand","Singapore"]
   var c_filter = []
   if (countries) {
     countries.split(',').forEach(country => {
@@ -196,20 +190,20 @@ function getCondition(queryString) {
         break;
     }
   } else {
-    if (!type || type === "review") {
+    if (type == "suggest") {
       d_filter = {
-        "$eq": ["$duration.days", 1]
+        "$eq": ["$duration.days", null]
       }
     } else {
       d_filter = {
-        "$eq": ["$duration.days", null]
+        "$eq": ["$duration.days", 1]
       }
     }
   }
   conds.durationFilter = d_filter
 
   // Month
-  var month = queryString.months; //array of string ["January", "September"]
+  var month = queryString.months; // array of string ["January", "September"]
   console.log("month:", month)
   var m_filter = []
   if (month) {
@@ -219,12 +213,12 @@ function getCondition(queryString) {
       })
     })
   } else {
-    m_filter.push(true) //if month == null retrurn all
+    m_filter.push(true) // if month == null retrurn all
   }
   conds.monthFilter = m_filter
 
   // Theme
-  var theme = queryString.themes; //array of string ["Mountain","Sea"]
+  var theme = queryString.themes; // array of string ["Mountain","Sea"]
   console.log("theme:", theme)
   if (theme) {
     cond = []

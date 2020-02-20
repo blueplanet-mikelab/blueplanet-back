@@ -18,18 +18,50 @@ const thread_res = {
   "duration_type": 1
 }
 
+const th_selected_conds = {
+  $filter: {
+    input: "$countries",
+    as: "country",
+    cond: {
+      "$eq": ["$$country.country", "TH"]
+    }
+  }
+}
+
+const suggestionPipeline = function (conds) {
+  return [{
+    $addFields: {
+      "th_selected": th_selected_conds,
+      "suggest_thread": {
+        "$eq": ["$duration_type", null]
+      }
+    }
+  },
+  {
+    "$match": {
+      "$and": [{
+        "th_selected": conds.within_th
+      },
+      {
+        "suggest_thread": {
+          "$eq": true
+        }
+      }
+      ]
+    }
+  },
+  {
+    $project: thread_res
+  },
+  {
+    $limit: 12
+  }]
+}
+
 const durationPipeline = function (conds) {
   return [{
     $addFields: {
-      "th_selected": {
-        $filter: {
-          input: "$countries",
-          as: "country",
-          cond: {
-            "$eq": ["$$country.country", "TH"]
-          }
-        }
-      },
+      "th_selected": th_selected_conds,
       "d_selected": {
         $or: conds.duration
       }
@@ -60,15 +92,7 @@ const durationPipeline = function (conds) {
 const monthPipeline = function (conds) {
   return [{
     $addFields: {
-      "th_selected": {
-        $filter: {
-          input: "$countries",
-          as: "country",
-          cond: {
-            "$eq": ["$$country.country", "TH"]
-          }
-        }
-      },
+      "th_selected": th_selected_conds,
       "m_selected": {
         $filter: {
           input: "$month",
@@ -105,6 +129,7 @@ const monthPipeline = function (conds) {
 }
 
 function getWithinThConds(within_th) {
+  var conds = {}
   if (parseInt(within_th) == 1) {
     within_th_selected = {
       "$ne": []
@@ -114,12 +139,12 @@ function getWithinThConds(within_th) {
       "$eq": []
     }
   }
-  return within_th_selected
+  conds.within_th = within_th_selected
+  return conds
 }
 
 function getDurationConds(queryString) {
-  var conds = {}
-  conds.within_th = getWithinThConds(queryString.within_th)
+  var conds = getWithinThConds(queryString.within_th)
 
   var duration = queryString.duration_type
   switch (parseInt(duration)) {
@@ -174,28 +199,12 @@ function getDurationConds(queryString) {
       }
       break;
   }
-
-  // parts = duration.replace(/\s+/g, "").match(/(than|\d+)-*(\d+)Days/)
-  // if (parts[1] == "than") {
-  //     duration_selected = {
-  //         "$gt": ["$duration.days", 12]
-  //     }
-  // } else {
-  //     duration_selected = {
-  //         "$and": [{
-  //             "$gte": ["$duration.days", parseInt(parts[1])]
-  //         }, {
-  //             "$lte": ["$duration.days", parseInt(parts[2])]
-  //         }]
-  //     }
-  // }
   conds.duration = duration_selected
   return conds
 }
 
 function getMonthQueryConds(queryString) {
-  var conds = {}
-  conds.within_th = getWithinThConds(queryString.within_th)
+  var conds = getWithinThConds(queryString.within_th)
 
   var month = queryString.month
   if (month) {
@@ -211,6 +220,13 @@ function getMonthQueryConds(queryString) {
 
 router.get('/mapCountries', function (req, res) {
   countries_col.find().then((doc) => {
+    res.send(doc)
+  })
+})
+
+router.get('/suggestThreads', function (req, res) {
+  var conds = getWithinThConds(req.within_th)
+  treads_col.aggregate(suggestionPipeline(conds)).then((doc) => {
     res.send(doc)
   })
 })
