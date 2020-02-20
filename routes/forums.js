@@ -9,7 +9,7 @@ const treads_col = db.get(process.env.MONGODB_COLLECTION)
 
 function selectSorting(sortby) {
   if (sortby == "upvoted") return { "vote": -1 }
-  else if (sortby == "popular") return { "popularity": -1 }
+  else if (sortby == "popular") return { "viewvotecom_per_day": -1 }
   else if (sortby == "newest") return { "created_at": -1 }
   else if (sortby == "oldest") return { "created_at": 1 }
   else return null
