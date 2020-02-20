@@ -127,7 +127,7 @@ function getCondition(queryString) {
   conds.typeFilter = t_filter
 
   // Country
-  var countries = queryString.countries; // array of string ["Thailand","Singapore"]
+  var countries = queryString.countries; //array of string ["Thailand","Singapore"]
   var c_filter = []
   if (countries) {
     countries.split(',').forEach(country => {
@@ -213,12 +213,12 @@ function getCondition(queryString) {
       })
     })
   } else {
-    m_filter.push(true) // if month == null retrurn all
+    m_filter.push(true) //if month == null retrurn all
   }
   conds.monthFilter = m_filter
 
   // Theme
-  var theme = queryString.themes; // array of string ["Mountain","Sea"]
+  var theme = queryString.themes; //array of string ["Mountain","Sea"]
   console.log("theme:", theme)
   if (theme) {
     cond = []
