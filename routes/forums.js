@@ -127,13 +127,13 @@ function getCondition(queryString) {
   conds.typeFilter = t_filter
 
   // Country
-  var countries = queryString.countries; //array of string ["Thailand","Singapore"]
+  var countries = queryString.countries; // array of string ["Thailand","Singapore"]
   var c_filter = []
   if (countries) {
     countries.split(',').forEach(country => {
       console.log("country:", country)
       c_filter.push({
-        "$eq": ["$$country.country", country]
+        "$eq": ["$$country.nameEnglish", country]
       })
     })
   } else {
