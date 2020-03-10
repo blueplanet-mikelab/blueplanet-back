@@ -225,7 +225,7 @@ router.get('/mapCountries', function (req, res) {
 })
 
 router.get('/suggestThreads', function (req, res) {
-  var conds = getWithinThConds(req.within_th)
+  var conds = getWithinThConds(req.query.within_th)
   treads_col.aggregate(suggestionPipeline(conds)).then((doc) => {
     res.send(doc)
   })
