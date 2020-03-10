@@ -219,7 +219,7 @@ function getMonthQueryConds(queryString) {
 }
 
 router.get('/mapCountries', function (req, res) {
-  countries_col.find().then((doc) => {
+  countries_col.find({}, { sort:{count:-1} } ).then((doc) => {
     res.send(doc)
   })
 })
