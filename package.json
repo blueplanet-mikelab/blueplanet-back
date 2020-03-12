@@ -10,9 +10,11 @@
   "author": "Issaree Srisomboon",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^4.0.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "lodash": "^4.17.15",
     "monk": "^7.1.1",
     "saslprep": "^1.0.3"
   },
