@@ -88,7 +88,7 @@ const pipeline = function (conds) {
       "thumbnail": 1,
       "countries": 1,
       "duration": 1,
-      "duration_type" : 1,
+      "duration_type": 1,
       "floorBudget": {
         $floor: "$budget"
       },
@@ -113,7 +113,7 @@ function getCondition(queryString) {
   conds = {}
 
   // Type
-  var type = queryString.type; 
+  var type = queryString.type;
   var t_filter = {}
   if (type == "suggest") {
     t_filter = {
@@ -131,7 +131,6 @@ function getCondition(queryString) {
   var c_filter = []
   if (countries) {
     countries.split(',').forEach(country => {
-      console.log("country:", country)
       c_filter.push({
         "$eq": ["$$country.nameEnglish", country]
       })
@@ -144,7 +143,6 @@ function getCondition(queryString) {
   // Duration
   var duration = queryString.duration_type // int { 1, 2, 3, 4, 5 }
   var d_filter = {}
-  console.log("duration:", duration)
   if (duration) {
     switch (parseInt(duration)) {
       case 1:
@@ -204,7 +202,6 @@ function getCondition(queryString) {
 
   // Month
   var month = queryString.months; // array of string ["January", "September"]
-  console.log("month:", month)
   var m_filter = []
   if (month) {
     month.split(',').forEach(mon => {
@@ -219,7 +216,6 @@ function getCondition(queryString) {
 
   // Theme
   var theme = queryString.themes; //array of string ["Mountain","Sea"]
-  console.log("theme:", theme)
   if (theme) {
     cond = []
     theme.split(',').forEach(theme => {
@@ -255,7 +251,6 @@ function getCondition(queryString) {
 }
 
 router.get('/filterQuery', function (req, res) {
-  console.log('Query:', req.query)
   conds = getCondition(req.query)
   treads_col.aggregate(pipeline(conds)).then((doc) => {
     res.send(doc);

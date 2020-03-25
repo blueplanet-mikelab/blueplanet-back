@@ -10,11 +10,16 @@ const PORT = process.env.PORT || 3001
 const homeRoute = require('./routes/home')
 const forumsRoute = require('./routes/forums')
 const usersRoute = require('./routes/users')
+const authRoute = require('./routes/auth')
 
 app.use(cors())
 app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 app.listen(PORT, () => console.log('Server is running on Port: ' + PORT))
 
 app.use('/home', homeRoute)
 app.use('/forums', forumsRoute)
-app.use('/users', usersRoute)
+app.use('/api/users', usersRoute)
+app.use('/api/auth', authRoute)

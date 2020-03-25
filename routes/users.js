@@ -9,7 +9,7 @@ const db = require('monk')(process.env.MONGODB_URI, {
 })
 const user_col = db.get(process.env.MONGODB_USER_COLLECTION)
 
-router.post('/register', async function (req, res) {
+router.post('/signup', async function (req, res) {
   let user = await user_col.findOne({ email: req.body.email })
   if (user) {
     return res.status(400).send('The user already exists.')
@@ -17,15 +17,11 @@ router.post('/register', async function (req, res) {
     user = (_.pick(req.body, ['fullName', 'email', 'password']))
     const salt = await bcrypt.genSalt(10)
     user.password = await bcrypt.hash(user.password, salt)
-    
-    user_col.insert(user)
-    res.send(_.pick(user, ['_id', 'fullName', 'email']))
+
+    user_col.insert(user, () => {
+      res.send(_.pick(user, ['_id', 'fullName', 'email']))
+    })
   }
-})
-
-// mock
-router.get('/triplist', function (req, res) {
-
 })
 
 module.exports = router
