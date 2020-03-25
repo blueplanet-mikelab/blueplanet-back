@@ -4,28 +4,21 @@ const router = express.Router()
 const bcrypt = require('bcrypt')
 const _ = require('lodash')
 require('dotenv').config()
-const db = require('monk')(process.env.MONGODB_URI, {
-  authSource: 'admin'
-})
-const user_col = db.get(process.env.MONGODB_USER_COLLECTION)
+
 const admin = require('../firebase-admin')
+const db = admin.database()
+const ref = db.ref('users')
 
 router.post('/', async (req, res) => {
-  // let user = await user_col.findOne({ email: req.body.email })
-  // if (!user) {
-  //   return res.status(400).send('Incorrect email.')
-  // }
-  // const validPassword = await bcrypt.compare(req.body.password, user.password);
-  // if (!validPassword) {
-  //   return res.status(400).send('Incorrect password.')
-  // }
-
   const idToken = Object.keys(req.body)[0]
   admin.auth()
     .verifyIdToken(idToken)
     .then((decodedToken) => {
+      // use uid to find user
       let uid = decodedToken.uid
-      // console.log(uid)
+      // ref.on("value", (snapshot) => {
+      //   console.log(snapshot.val())
+      // })
     })
     .catch((error) => {
       console.log(error)
