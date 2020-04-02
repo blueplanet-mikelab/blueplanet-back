@@ -218,29 +218,29 @@ function getMonthQueryConds(queryString) {
   return conds
 }
 
-router.get('/mapCountries', function (req, res) {
-  countries_col.find({}, { sort:{count:-1} } ).then((doc) => {
+router.get('/mapCountries', async function (req, res) {
+  await countries_col.find({}, { sort:{count:-1} } ).then((doc) => {
     res.send(doc)
   })
 })
 
-router.get('/suggestThreads', function (req, res) {
+router.get('/suggestThreads', async function (req, res) {
   var conds = getWithinThConds(req.query.within_th)
-  treads_col.aggregate(suggestionPipeline(conds)).then((doc) => {
+  await treads_col.aggregate(suggestionPipeline(conds)).then((doc) => {
     res.send(doc)
   })
 })
 
-router.get('/durationQuery', function (req, res) {
+router.get('/durationQuery', async function (req, res) {
   durationConds = getDurationConds(req.query)
-  treads_col.aggregate(durationPipeline(durationConds)).then((doc) => {
+  await treads_col.aggregate(durationPipeline(durationConds)).then((doc) => {
     res.send(doc)
   })
 })
 
-router.get('/monthQuery', function (req, res) {
+router.get('/monthQuery', async function (req, res) {
   monthConds = getMonthQueryConds(req.query)
-  treads_col.aggregate(monthPipeline(monthConds)).then((doc) => {
+  await treads_col.aggregate(monthPipeline(monthConds)).then((doc) => {
     res.send(doc)
   })
 })
