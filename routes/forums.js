@@ -5,7 +5,7 @@ require('dotenv').config()
 const db = require('monk')(process.env.MONGODB_URI, {
   authSource: 'admin'
 })
-const treads_col = db.get(process.env.MONGODB_COLLECTION)
+const threads_col = db.get(process.env.MONGODB_COLLECTION)
 
 function selectSorting(sortby) {
   if (sortby == "upvoted") return { "vote": -1 }
@@ -252,7 +252,7 @@ function getCondition(queryString) {
 
 router.get('/filterQuery', function (req, res) {
   conds = getCondition(req.query)
-  treads_col.aggregate(pipeline(conds)).then((doc) => {
+  threads_col.aggregate(pipeline(conds)).then((doc) => {
     res.send(doc);
   })
 });
