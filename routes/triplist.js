@@ -7,8 +7,8 @@ require('dotenv').config()
 const db = require('monk')(process.env.MONGODB_URI, {
   authSource: 'admin'
 })
-const threads_col = db.get(process.env.MONGODB_COLLECTION)
-const triplists_col = db.get(process.env.MONGODB_TRIPLIST_COLLECTION)
+const threads_col = db.get(process.env.MONGODB_THREADS_COLLECTION)
+const triplists_col = db.get(process.env.MONGODB_TRIPLISTS_COLLECTION)
 
 const admin = require('../firebase-admin')
 

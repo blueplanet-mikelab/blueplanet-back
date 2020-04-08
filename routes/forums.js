@@ -5,7 +5,7 @@ require('dotenv').config()
 const db = require('monk')(process.env.MONGODB_URI, {
   authSource: 'admin'
 })
-const threads_col = db.get(process.env.MONGODB_COLLECTION)
+const threads_col = db.get(process.env.MONGODB_THREADS_COLLECTION)
 
 function selectSorting(sortby) {
   if (sortby == "upvoted") return { "vote": -1 }
@@ -245,7 +245,7 @@ function getCondition(queryString) {
   conds.budgetMax = queryString.budget_max ? parseInt(queryString.budget_max) : 50000;
   conds.resultPage = queryString.result_page ? parseInt(queryString.result_page) : 1;
   conds.sortby = queryString.sortby ? queryString.sortby : 'popular';
-  console.log(conds.budgetMin, conds.budgetMax, conds.resultPage, conds.sortby)
+  // console.log(conds.budgetMin, conds.budgetMax, conds.resultPage, conds.sortby)
 
   return conds
 }
