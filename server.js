@@ -10,8 +10,8 @@ const PORT = process.env.PORT || 3001
 const homeRoute = require('./routes/home')
 const forumsRoute = require('./routes/forums')
 const usersRoute = require('./routes/users')
-const triplistRoute = require('./routes/triplist')
-const favoriteRoute = require('./routes/favorite')
+const triplistRoute = require('./routes/triplists')
+const favoriteRoute = require('./routes/favorites')
 
 app.use(cors())
 app.use(bodyParser.json())

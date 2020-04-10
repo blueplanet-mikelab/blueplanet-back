@@ -48,11 +48,11 @@ const threadSentData = {
 
 const selectSorting = (sortBy) => {
   switch (sortBy) {
-    case 'mostThreads':
+    case 'most':
       return { 'numThreads': -1 }
     case 'newest': // modified in figma
       return { 'created_at': -1 }
-    case 'recentlyAdded':
+    case 'latest':
       return { 'threads.added': -1 }
     case 'upvoted':
       return { 'threads.vote': -1 }
@@ -64,22 +64,18 @@ const selectSorting = (sortBy) => {
 }
 
 const threadPipeline = async (id) => {
-  if (!id) {
-    return null
-  } else {
-    return await threads_col
-      .aggregate([{
-        $project: threadSentData
-      },
-      {
-        $match: {
-          _id: db.id(id)
-        }
-      }])
-      .then((thread) => {
-        return thread
-      })
-  }
+  return await threads_col
+    .aggregate([{
+      $project: threadSentData
+    },
+    {
+      $match: {
+        _id: db.id(id)
+      }
+    }])
+    .then((thread) => {
+      return thread
+    })
 }
 
 const createTriplist = (req, res, user_id, thread) => {
@@ -107,7 +103,7 @@ const updateTriplist = (res, triplist_id, user_id, operator) => {
     .findOneAndUpdate({
       '_id': db.id(triplist_id),
       'user_id': user_id
-    }, operator, { upset: true })
+    }, operator, { upsert: true })
     .then(() => {
       res.send({
         message: 'Your Triplist has been updated'
@@ -282,7 +278,7 @@ router.delete('/:id/remove/:threadId', async (req, res) => {
       '_id': db.id(req.params.id),
       'user_id': 'sample_uid', //decoedToken
       'threads._id': db.id(req.params.threadId)
-    }, { $pull: { 'threads': { '_id': req.params.threadId } } }, { upset: true })
+    }, { $pull: { 'threads': { '_id': req.params.threadId } } }, { upsert: true })
     .then(() => {
       res.send({
         message: 'Your Triplist has been updated'
