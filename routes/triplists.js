@@ -24,28 +24,6 @@ const triplistSentData = {
   'created_at': 1
 }
 
-const threadSentData = {
-  'topic_id': 1,
-  'title': 1,
-  'thumbnail': 1,
-  'countries': 1,
-  'duration': 1,
-  'duration_type': 1,
-  'floorBudget': {
-    $floor: '$budget'
-  },
-  'theme': 1,
-  'view': 1,
-  'vote': 1,
-  'popularity': {
-    $floor: '$viewvotecom_per_day'
-  },
-  'created_at': 1,
-  'added': {
-    $add: new Date()
-  }
-}
-
 const selectSorting = (sortBy) => {
   switch (sortBy) {
     case 'most':
@@ -66,7 +44,18 @@ const selectSorting = (sortBy) => {
 const threadPipeline = async (id) => {
   return await threads_col
     .aggregate([{
-      $project: threadSentData
+      $project: {
+        'topic_id': 1,
+        'title': 1,
+        'thumbnail': 1,
+        'vote': 1,
+        'popularity': {
+          $floor: '$viewvotecom_per_day'
+        },
+        'added': {
+          $add: new Date()
+        }
+      }
     },
     {
       $match: {
@@ -101,8 +90,8 @@ const createTriplist = (req, res, user_id, thread) => {
 const updateTriplist = (res, triplist_id, user_id, operator) => {
   triplists_col
     .findOneAndUpdate({
-      '_id': db.id(triplist_id),
-      'user_id': user_id
+      _id: db.id(triplist_id),
+      user_id: user_id
     }, operator, { upsert: true })
     .then(() => {
       res.send({
@@ -113,6 +102,22 @@ const updateTriplist = (res, triplist_id, user_id, operator) => {
       res.status(500).send({
         message: error.message
       })
+    })
+}
+
+const isAdded = async (triplist_id, user_id, thread_id) => {
+  return await triplists_col
+    .findOne({
+      _id: triplist_id,
+      user_id: user_id,
+      threads: {
+        $elemMatch: {
+          _id: thread_id
+        }
+      }
+    })
+    .then((doc) => {
+      return doc ? true : false
     })
 }
 
@@ -163,7 +168,7 @@ router.post('/add', async (req, res) => {
   // })
 })
 
-// Create a new triplist with a thread
+// Create a new triplist with a initialized thread
 router.post('/add/:id', async (req, res) => {
   if (!req.body.title) {
     res.status(500).send({
@@ -253,17 +258,27 @@ router.put('/:id', async (req, res) => {
 
 // Add a thread to a triplist
 router.put('/:id/add/:threadId', async (req, res) => {
-  var newThread
-  await threadPipeline(req.params.threadId).then((result) => {
-    newThread = result[0]
-  })
-
   // await admin
   // .auth()
   // .verifyIdToken(req.headers.authorization)
   // .then((decodedToken) => {
-  // updateTriplist(res, req.params.id, decodedToken, { $push: { threads: newThread } })
-  updateTriplist(res, req.params.id, 'sample_uid', { $push: { threads: newThread } })
+  if (await isAdded(req.params.id, 'sample_uid', req.params.threadId) === true) {
+    res.status(200).send({
+      message: 'Already added in triplists'
+    })
+  } else {
+    var newThread = {}
+    await threadPipeline(req.params.threadId).then((result) => {
+      newThread = result[0]
+    })
+    updateTriplist(res, req.params.id, 'sample_uid', {
+      $addToSet: {
+        threads: {
+          $each: newThread
+        }
+      }
+    })
+  }
   // })
 })
 
