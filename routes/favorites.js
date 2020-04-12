@@ -21,7 +21,7 @@ const selectSorting = (sortBy) => {
     case 'popular':
       return { 'favThreads.popularity': -1 }
     default:
-      return { 'favThreads.added': 1 }
+      return { 'favThreads.added': -1 }
   }
 }
 
@@ -87,12 +87,7 @@ router.get('/', async (req, res) => {
   //   .verifyIdToken(req.headers.authorization)
   //   .then((decodedToken) => {
   await favorites_col
-    .aggregate([{
-      $project: {
-        'user_id': 1,
-        'favThreads': 1
-      }
-    },
+    .aggregate([
     {
       $match: {
         user_id: 'sample_uid' // decodedToken
@@ -113,10 +108,15 @@ router.get('/', async (req, res) => {
         'user_id': { '$first': '$user_id' },
         'favThreads': { '$push': '$favThreads' }
       }
-    }
+    },
+    {
+      $project: {
+        'favThreads': 1
+      }
+    },
     ])
     .then((favorites) => {
-      res.send(favorites)
+      res.send(favorites[0])
     })
     .catch((error) => {
       res.status(500).send({
@@ -138,7 +138,7 @@ router.get('/:id', async (req, res) => {
   // })
 })
 
-// Add thread to favorite
+// Add a thread to favorite
 router.put('/:id', async (req, res) => {
   // await admin
   //   .auth()
@@ -165,7 +165,7 @@ router.put('/:id', async (req, res) => {
   // })
 })
 
-// Remove thread from favorite
+// Remove a thread from favorite
 router.delete('/:id', async (req, res) => {
   // await admin
   //   .auth()

@@ -13,7 +13,6 @@ const triplists_col = db.get(process.env.MONGODB_TRIPLISTS_COLLECTION)
 const admin = require('../firebase-admin')
 
 const triplistSentData = {
-  'user_id': 1,
   'title': 1,
   'description': 1,
   'thumbnail': 1,
@@ -37,7 +36,7 @@ const selectSorting = (sortBy) => {
     case 'popular':
       return { 'threads.popularity': -1 }
     default:
-      return { 'created_at': 1 }
+      return { 'created_at': -1 }
   }
 }
 
@@ -78,7 +77,7 @@ const createTriplist = (req, res, user_id, thread) => {
       created_at: new Date()
     })
     .then((triplist) => {
-      res.send(triplist)
+      res.send(_.pick(triplist, '_id', 'title', 'description', 'thumbnail', 'threads', 'created_at'))
     })
     .catch((error) => {
       res.status(500).send({
@@ -87,12 +86,9 @@ const createTriplist = (req, res, user_id, thread) => {
     })
 }
 
-const updateTriplist = (res, triplist_id, user_id, operator) => {
+const updateTriplist = (res, filter, operator) => {
   triplists_col
-    .findOneAndUpdate({
-      _id: db.id(triplist_id),
-      user_id: user_id
-    }, operator, { upsert: true })
+    .findOneAndUpdate(filter, operator, { upsert: true })
     .then(() => {
       res.send({
         message: 'Your Triplist has been updated'
@@ -130,16 +126,17 @@ router.get('/', async (req, res) => {
   await triplists_col
     .aggregate([
       {
-        $project: triplistSentData
-      },
-      {
         $match: {
           user_id: 'sample_uid' // decodedToken
         }
       },
       {
-        $sort: selectSorting(req.query.sort)
-      }])
+        $sort: selectSorting(req.query.sortby)
+      },
+      {
+        $project: triplistSentData
+      }
+    ])
     .then((triplists) => {
       res.send(triplists)
     })
@@ -151,7 +148,7 @@ router.get('/', async (req, res) => {
   // })
 })
 
-// Create a new triplist without a thread
+// Create a new triplist without an initialized thread
 router.post('/add', async (req, res) => {
   if (!req.body.title) {
     res.status(500).send({
@@ -168,7 +165,7 @@ router.post('/add', async (req, res) => {
   // })
 })
 
-// Create a new triplist with a initialized thread
+// Create a new triplist with an initialized thread
 router.post('/add/:id', async (req, res) => {
   if (!req.body.title) {
     res.status(500).send({
@@ -211,7 +208,7 @@ router.get('/:id', async (req, res) => {
         }
       },
       {
-        $sort: selectSorting(req.query.sort)
+        $sort: selectSorting(req.query.sortby)
       },
       {
         $group: {
@@ -229,7 +226,7 @@ router.get('/:id', async (req, res) => {
       }
     ])
     .then((thread) => {
-      res.send(thread)
+      res.send(thread[0])
     })
     .catch((error) => {
       res.status(500).send({
@@ -251,8 +248,14 @@ router.put('/:id', async (req, res) => {
   //   .auth()
   //   .verifyIdToken(req.headers.authorization)
   //   .then((decodedToken) => {
-  // updateTriplist(res, req.params.id, decodedToken, { $set: req.body })
-  updateTriplist(res, req.params.id, 'sample_uid', { $set: req.body })
+  updateTriplist(res,
+    {
+      _id: db.id(req.params.id),
+      user_id: 'sample_uid'
+    },
+    {
+      $set: req.body
+    })
   // })
 })
 
@@ -269,15 +272,21 @@ router.put('/:id/add/:threadId', async (req, res) => {
   } else {
     var newThread = {}
     await threadPipeline(req.params.threadId).then((result) => {
-      newThread = result[0]
+      newThread = result
     })
-    updateTriplist(res, req.params.id, 'sample_uid', {
-      $addToSet: {
-        threads: {
-          $each: newThread
+
+    updateTriplist(res,
+      {
+        _id: db.id(req.params.id),
+        user_id: 'sample_uid'
+      },
+      {
+        $addToSet: {
+          threads: {
+            $each: newThread
+          }
         }
-      }
-    })
+      })
   }
   // })
 })
@@ -288,24 +297,20 @@ router.delete('/:id/remove/:threadId', async (req, res) => {
   // .auth()
   // .verifyIdToken(req.headers.authorization)
   // .then((decodedToken) => {
-  triplists_col
-    .findOneAndUpdate({
+  updateTriplist(res,
+    {
       '_id': db.id(req.params.id),
       'user_id': 'sample_uid', //decoedToken
       'threads._id': db.id(req.params.threadId)
-    }, { $pull: { 'threads': { '_id': req.params.threadId } } }, { upsert: true })
-    .then(() => {
-      res.send({
-        message: 'Your Triplist has been updated'
-      })
+    },
+    {
+      $pull: {
+        'threads': {
+          '_id': req.params.threadId
+        }
+      }
     })
-    .catch((error) => {
-      res.status(500).send({
-        message: error.message
-      })
-    })
-  // })
-
+  //})
 })
 
 // Remove a triplist

@@ -48,47 +48,60 @@ const isAdded = async (user_id, id) => {
     })
 }
 
+const updateRecentThread = (res, filter, operator) => {
+  recently_viewed_col
+    .findOneAndUpdate(filter, operator, { upsert: true })
+    .then(() => {
+      res.status(200).send(true)
+    })
+    .catch((error) => {
+      res.status(500).send({
+        message: error.message
+      })
+    })
+}
+
 router.get('/', async (req, res) => {
   // await admin
   //   .auth()
   //   .verifyIdToken(req.headers.authorization)
   //   .then((decodedToken) => {
   recently_viewed_col
-    .aggregate([{
-      $project: {
-        'user_id': 1,
-        'recentThreads': 1,
+    .aggregate([
+      {
+        $match: {
+          user_id: 'sample_uid' // decodedToken
+        }
+      },
+      {
+        $unwind: {
+          'path': '$recentThreads',
+          'preserveNullAndEmptyArrays': true
+        }
+      },
+      {
+        $sort: {
+          'recentThreads.added': -1
+        }
+      },
+      {
+        $group: {
+          '_id': '$_id',
+          'user_id': { '$first': '$user_id' },
+          'recentThreads': { '$push': '$recentThreads' }
+        }
+      },
+      {
+        $project: {
+          'recentThreads': 1,
+        }
+      },
+      {
+        $limit: 20
       }
-    },
-    {
-      $match: {
-        user_id: 'sample_uid' // decodedToken
-      }
-    },
-    {
-      $unwind: {
-        'path': '$recentThreads',
-        'preserveNullAndEmptyArrays': true
-      }
-    },
-    {
-      $sort: {
-        'recentThreads.added': -1
-      }
-    },
-    {
-      $group: {
-        '_id': '$_id',
-        'user_id': { '$first': '$user_id' },
-        'recentThreads': { '$push': '$recentThreads' }
-      }
-    },
-    {
-      $limit: 20
-    }
     ])
     .then((recentThreads) => {
-      res.send(recentThreads)
+      res.send(recentThreads[0])
     })
     .catch((error) => {
       res.status(500).send({
@@ -104,34 +117,37 @@ router.put('/:id', async (req, res) => {
   //   .verifyIdToken(req.headers.authorization)
   //   .then((decodedToken) => {
   if (await isAdded('sample_uid', req.params.id) === true) {
-    res.status(200).send(false)
+    updateRecentThread(res,
+      {
+        user_id: 'sample_uid',
+        recentThreads: {
+          $elemMatch: {
+            _id: req.params.id
+          }
+        }
+      },
+      {
+        $set: {
+          'recentThreads.$.added': new Date()
+        }
+      })
   } else {
     var recentThread = {}
     await threadPipeline(req.params.id).then((result) => {
       recentThread = result
     })
 
-    recently_viewed_col
-      .findOneAndUpdate(
-        { user_id: 'sample_uid' },
-        {
-          $addToSet: {
-            recentThreads: {
-              $each: recentThread
-            }
-          }
-        },
-        { upsert: true })
-      .then(() => {
-        res.status(200).send(true)
+    updateRecentThread(res,
+      {
+        user_id: 'sample_uid'
+      },
+      {
+        $set: {
+          added: new Date()
+        }
       })
-      .catch((error) => {
-        res.status(500).send({
-          message: error.message
-        })
-      })
-    // })
   }
+  //})
 })
 
 module.exports = router
