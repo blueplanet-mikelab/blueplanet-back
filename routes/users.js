@@ -23,12 +23,13 @@ router.get('/', async function (req, res) {
 })
 
 router.post('/signup', async function (req, res) {
-  await admin
+  var checkRevoked = true;
+  admin
     .auth()
-    .verifyIdToken(req.headers.authorization)
-    .then((decodedToken) => {
+    .verifyIdToken(req.headers.authorization, checkRevoked)
+    .then(payload => {
       ref
-        .child(`users/${decodedToken.uid}`)
+        .child(`users/${payload.uid}`)
         .push(_.pick(req.body, ['email', 'displayName']))
         .then((user) => {
           user.on('value', (snapshot) => {
@@ -40,6 +41,19 @@ router.post('/signup', async function (req, res) {
             message: error.message
           })
         })
+    })
+    .catch(error => {
+      if (error.code == 'auth/id-token-revoked') {
+        // Token has been revoked. Inform the user to reauthenticate or signOut() the user.
+        res.status(401).send({
+          message: 'Reauthenticate required'
+        })
+      } else {
+        // Token is invalid.
+        res.status(401).send({
+          message: error.message
+        })
+      }
     })
 })
 

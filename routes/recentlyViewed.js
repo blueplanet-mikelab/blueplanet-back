@@ -12,6 +12,29 @@ const recently_viewed_col = db.get(process.env.MONGODB_RECENTLY_VIEWED_COLLECTIO
 
 const admin = require('../firebase-admin')
 
+const checkTokenRevoke = async (res, idToken) => {
+  var checkRevoked = true;
+  return await admin
+    .auth()
+    .verifyIdToken(idToken, checkRevoked)
+    .then(payload => {
+      return payload.uid
+    })
+    .catch(error => {
+      if (error.code == 'auth/id-token-revoked') {
+        // Token has been revoked. Inform the user to reauthenticate or signOut() the user.
+        res.status(401).send({
+          message: 'Reauthenticate required'
+        })
+      } else {
+        // Token is invalid.
+        res.status(401).send({
+          message: error.message
+        })
+      }
+    });
+}
+
 const threadPipeline = async (id) => {
   return await threads_col
     .aggregate([{
@@ -33,10 +56,12 @@ const threadPipeline = async (id) => {
     })
 }
 
-const isAdded = async (user_id, id) => {
+const isAdded = async (uid, id) => {
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+
   return await recently_viewed_col
     .findOne({
-      user_id: user_id,
+      uid: uid,
       recentThreads: {
         $elemMatch: {
           _id: id
@@ -48,8 +73,8 @@ const isAdded = async (user_id, id) => {
     })
 }
 
-const updateRecentThread = (res, filter, operator) => {
-  recently_viewed_col
+const updateRecentThread = async (res, filter, operator) => {
+  await recently_viewed_col
     .findOneAndUpdate(filter, operator, { upsert: true })
     .then(() => {
       res.status(200).send(true)
@@ -62,15 +87,13 @@ const updateRecentThread = (res, filter, operator) => {
 }
 
 router.get('/', async (req, res) => {
-  // await admin
-  //   .auth()
-  //   .verifyIdToken(req.headers.authorization)
-  //   .then((decodedToken) => {
-  recently_viewed_col
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+
+  await recently_viewed_col
     .aggregate([
       {
         $match: {
-          user_id: 'sample_uid' // decodedToken
+          uid: uid
         }
       },
       {
@@ -87,7 +110,7 @@ router.get('/', async (req, res) => {
       {
         $group: {
           '_id': '$_id',
-          'user_id': { '$first': '$user_id' },
+          'uid': { '$first': '$uid' },
           'recentThreads': { '$push': '$recentThreads' }
         }
       },
@@ -108,18 +131,15 @@ router.get('/', async (req, res) => {
         message: error.message
       })
     })
-  // })
 })
 
 router.put('/:id', async (req, res) => {
-  // await admin
-  //   .auth()
-  //   .verifyIdToken(req.headers.authorization)
-  //   .then((decodedToken) => {
-  if (await isAdded('sample_uid', req.params.id) === true) {
-    updateRecentThread(res,
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+
+  if (await isAdded(uid, req.params.id) === true) {
+    await updateRecentThread(res,
       {
-        user_id: 'sample_uid',
+        uid: uid,
         recentThreads: {
           $elemMatch: {
             _id: req.params.id
@@ -137,9 +157,9 @@ router.put('/:id', async (req, res) => {
       recentThread = result
     })
 
-    updateRecentThread(res,
+    await updateRecentThread(res,
       {
-        user_id: 'sample_uid'
+        uid: uid
       },
       {
         $set: {
@@ -147,7 +167,6 @@ router.put('/:id', async (req, res) => {
         }
       })
   }
-  //})
 })
 
 module.exports = router
