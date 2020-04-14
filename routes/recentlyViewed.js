@@ -13,6 +13,12 @@ const recently_viewed_col = db.get(process.env.MONGODB_RECENTLY_VIEWED_COLLECTIO
 const admin = require('../firebase-admin')
 
 const checkTokenRevoke = async (res, idToken) => {
+  if (!idToken) {
+    res.status(401).send({
+      message: 'Unauthorized: Access to this resource is denied.'
+    })
+  }
+  
   var checkRevoked = true;
   return await admin
     .auth()
