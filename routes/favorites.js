@@ -12,6 +12,29 @@ const favorites_col = db.get(process.env.MONGODB_FAVORITES_COLLECTION)
 
 const admin = require('../firebase-admin')
 
+const checkTokenRevoke = async (res, idToken) => {
+  var checkRevoked = true;
+  return await admin
+    .auth()
+    .verifyIdToken(idToken, checkRevoked)
+    .then(payload => {
+      return payload.uid
+    })
+    .catch(error => {
+      if (error.code == 'auth/id-token-revoked') {
+        // Token has been revoked. Inform the user to reauthenticate or signOut() the user.
+        res.status(401).send({
+          message: 'Reauthenticate required'
+        })
+      } else {
+        // Token is invalid.
+        res.status(401).send({
+          message: error.message
+        })
+      }
+    });
+}
+
 const selectSorting = (sortBy) => {
   switch (sortBy) {
     case 'latest':
@@ -51,9 +74,9 @@ const threadPipeline = async (id) => {
     })
 }
 
-const updateFavThread = async (res, user_id, operator, message) => {
+const updateFavThread = async (res, uid, operator, message) => {
   await favorites_col
-    .findOneAndUpdate({ user_id: user_id }, operator, { upsert: true })
+    .findOneAndUpdate({ uid: uid }, operator, { upsert: true })
     .then(() => {
       res.status(200).send({
         message: message
@@ -66,10 +89,10 @@ const updateFavThread = async (res, user_id, operator, message) => {
     })
 }
 
-const isAdded = async (user_id, id) => {
+const isAdded = async (uid, id) => {
   return await favorites_col
     .findOne({
-      user_id: user_id,
+      uid: uid,
       favThreads: {
         $elemMatch: {
           _id: id
@@ -82,38 +105,36 @@ const isAdded = async (user_id, id) => {
 }
 // Get all favorite thread(s)
 router.get('/', async (req, res) => {
-  // await admin
-  //   .auth()
-  //   .verifyIdToken(req.headers.authorization)
-  //   .then((decodedToken) => {
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+
   await favorites_col
     .aggregate([
-    {
-      $match: {
-        user_id: 'sample_uid' // decodedToken
-      }
-    },
-    {
-      $unwind: {
-        'path': '$favThreads',
-        'preserveNullAndEmptyArrays': true
-      }
-    },
-    {
-      $sort: selectSorting(req.query.sort)
-    },
-    {
-      $group: {
-        '_id': '$_id',
-        'user_id': { '$first': '$user_id' },
-        'favThreads': { '$push': '$favThreads' }
-      }
-    },
-    {
-      $project: {
-        'favThreads': 1
-      }
-    },
+      {
+        $match: {
+          uid: uid
+        }
+      },
+      {
+        $unwind: {
+          'path': '$favThreads',
+          'preserveNullAndEmptyArrays': true
+        }
+      },
+      {
+        $sort: selectSorting(req.query.sort)
+      },
+      {
+        $group: {
+          '_id': '$_id',
+          'uid': { '$first': '$uid' },
+          'favThreads': { '$push': '$favThreads' }
+        }
+      },
+      {
+        $project: {
+          'favThreads': 1
+        }
+      },
     ])
     .then((favorites) => {
       res.send(favorites[0])
@@ -123,28 +144,22 @@ router.get('/', async (req, res) => {
         message: error.message
       })
     })
-  // })
 })
 
 // Get boolean of a thread if it has been added by id
 router.get('/:id', async (req, res) => {
-  // await admin
-  //   .auth()
-  //   .verifyIdToken(req.headers.authorization)
-  //   .then((decodedToken) => {
-  await isAdded('sample_uid', req.params.id) === true
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+
+  await isAdded(uid, req.params.id) === true
     ? res.status(200).send(true)
     : res.status(200).send(false)
-  // })
 })
 
 // Add a thread to favorite
 router.put('/:id', async (req, res) => {
-  // await admin
-  //   .auth()
-  //   .verifyIdToken(req.headers.authorization)
-  //   .then((decodedToken) => {
-  if (await isAdded('sample_uid', req.params.id) === true) {
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+
+  if (await isAdded(uid, req.params.id) === true) {
     res.status(200).send({
       message: 'Already added in favorite'
     })
@@ -154,7 +169,7 @@ router.put('/:id', async (req, res) => {
       favThread = result
     })
 
-    updateFavThread(res, 'sample_uid', {
+    await updateFavThread(res, uid, {
       $addToSet: {
         favThreads: {
           $each: favThread
@@ -167,18 +182,15 @@ router.put('/:id', async (req, res) => {
 
 // Remove a thread from favorite
 router.delete('/:id', async (req, res) => {
-  // await admin
-  //   .auth()
-  //   .verifyIdToken(req.headers.authorization)
-  //   .then((decodedToken) => {
-  updateFavThread(res, 'sample_uid', {
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+
+  await updateFavThread(res, uid, {
     $pull: {
       favThreads: {
         _id: req.params.id
       }
     }
   }, 'Removed from Favorite.')
-  //   })
 })
 
 module.exports = router

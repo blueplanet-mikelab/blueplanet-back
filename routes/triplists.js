@@ -12,6 +12,29 @@ const triplists_col = db.get(process.env.MONGODB_TRIPLISTS_COLLECTION)
 
 const admin = require('../firebase-admin')
 
+const checkTokenRevoke = async (res, idToken) => {
+  var checkRevoked = true;
+  return await admin
+    .auth()
+    .verifyIdToken(idToken, checkRevoked)
+    .then(payload => {
+      return payload.uid
+    })
+    .catch(error => {
+      if (error.code == 'auth/id-token-revoked') {
+        // Token has been revoked. Inform the user to reauthenticate or signOut() the user.
+        res.status(401).send({
+          message: 'Reauthenticate required'
+        })
+      } else {
+        // Token is invalid.
+        res.status(401).send({
+          message: error.message
+        })
+      }
+    });
+}
+
 const triplistSentData = {
   'title': 1,
   'description': 1,
@@ -66,10 +89,10 @@ const threadPipeline = async (id) => {
     })
 }
 
-const createTriplist = (req, res, user_id, thread) => {
-  triplists_col
+const createTriplist = async (req, res, uid, thread) => {
+  await triplists_col
     .insert({
-      user_id: user_id,
+      uid: uid,
       title: req.body.title,
       description: req.body.description,
       thumbnail: req.body.thumbnail,
@@ -86,8 +109,8 @@ const createTriplist = (req, res, user_id, thread) => {
     })
 }
 
-const updateTriplist = (res, filter, operator) => {
-  triplists_col
+const updateTriplist = async (res, filter, operator) => {
+  await triplists_col
     .findOneAndUpdate(filter, operator, { upsert: true })
     .then(() => {
       res.send({
@@ -101,11 +124,11 @@ const updateTriplist = (res, filter, operator) => {
     })
 }
 
-const isAdded = async (triplist_id, user_id, thread_id) => {
+const isAdded = async (triplist_id, uid, thread_id) => {
   return await triplists_col
     .findOne({
       _id: triplist_id,
-      user_id: user_id,
+      uid: uid,
       threads: {
         $elemMatch: {
           _id: thread_id
@@ -119,15 +142,13 @@ const isAdded = async (triplist_id, user_id, thread_id) => {
 
 // Retrieve all triplist(s)
 router.get('/', async (req, res) => {
-  // await admin
-  //   .auth()
-  //   .verifyIdToken(req.headers.authorization)
-  //   .then((decodedToken) => {
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+
   await triplists_col
     .aggregate([
       {
         $match: {
-          user_id: 'sample_uid' // decodedToken
+          uid: uid
         }
       },
       {
@@ -145,7 +166,6 @@ router.get('/', async (req, res) => {
         message: error.message
       })
     })
-  // })
 })
 
 // Create a new triplist without an initialized thread
@@ -156,13 +176,8 @@ router.post('/add', async (req, res) => {
     })
   }
 
-  // await admin
-  // .auth()
-  // .verifyIdToken(req.headers.authorization)
-  // .then((decodedToken) => {
-  // createTriplist(req, res, decodedToken, [])
-  createTriplist(req, res, 'sample_uid', [])
-  // })
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+  await createTriplist(req, res, uid, [])
 })
 
 // Create a new triplist with an initialized thread
@@ -177,28 +192,20 @@ router.post('/add/:id', async (req, res) => {
   await threadPipeline(req.params.id).then((result) => {
     thread = result
   })
-
-  // await admin
-  //   .auth()
-  //   .verifyIdToken(req.headers.authorization)
-  //   .then((decodedToken) => {
-  // createTriplist(req, res, decodedToken, thread)
-  createTriplist(req, res, 'sample_uid', thread)
-  // })
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+  await createTriplist(req, res, uid, thread)
 })
 
 // Get a triplist by id
 router.get('/:id', async (req, res) => {
-  // await admin
-  // .auth()
-  // .verifyIdToken(req.headers.authorization)
-  // .then((decodedToken) => {
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+
   await triplists_col
     .aggregate([
       {
         $match: {
           _id: db.id(req.params.id),
-          user_id: 'sample_uid', //decodedToken
+          uid: uid,
         }
       },
       {
@@ -213,7 +220,7 @@ router.get('/:id', async (req, res) => {
       {
         $group: {
           '_id': '$_id',
-          'user_id': { '$first': '$user_id' },
+          'uid': { '$first': '$uid' },
           'title': { '$first': '$title' },
           'description': { '$first': '$description' },
           'thumbnail': { '$first': '$thumbnail' },
@@ -233,7 +240,6 @@ router.get('/:id', async (req, res) => {
         message: error.message
       })
     })
-  // })
 })
 
 // Update a detail of triplist by id
@@ -244,28 +250,22 @@ router.put('/:id', async (req, res) => {
     })
   }
 
-  // await admin
-  //   .auth()
-  //   .verifyIdToken(req.headers.authorization)
-  //   .then((decodedToken) => {
-  updateTriplist(res,
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+  await updateTriplist(res,
     {
       _id: db.id(req.params.id),
-      user_id: 'sample_uid'
+      uid: uid
     },
     {
       $set: req.body
     })
-  // })
 })
 
 // Add a thread to a triplist
 router.put('/:id/add/:threadId', async (req, res) => {
-  // await admin
-  // .auth()
-  // .verifyIdToken(req.headers.authorization)
-  // .then((decodedToken) => {
-  if (await isAdded(req.params.id, 'sample_uid', req.params.threadId) === true) {
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+
+  if (await isAdded(req.params.id, uid, req.params.threadId) === true) {
     res.status(200).send({
       message: 'Already added in triplists'
     })
@@ -275,10 +275,10 @@ router.put('/:id/add/:threadId', async (req, res) => {
       newThread = result
     })
 
-    updateTriplist(res,
+    await updateTriplist(res,
       {
         _id: db.id(req.params.id),
-        user_id: 'sample_uid'
+        uid: uid
       },
       {
         $addToSet: {
@@ -288,19 +288,16 @@ router.put('/:id/add/:threadId', async (req, res) => {
         }
       })
   }
-  // })
 })
 
 // Remove a thread from a triplist
 router.delete('/:id/remove/:threadId', async (req, res) => {
-  // await admin
-  // .auth()
-  // .verifyIdToken(req.headers.authorization)
-  // .then((decodedToken) => {
-  updateTriplist(res,
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+
+  await updateTriplist(res,
     {
       '_id': db.id(req.params.id),
-      'user_id': 'sample_uid', //decoedToken
+      'uid': uid,
       'threads._id': db.id(req.params.threadId)
     },
     {
@@ -310,19 +307,16 @@ router.delete('/:id/remove/:threadId', async (req, res) => {
         }
       }
     })
-  //})
 })
 
 // Remove a triplist
 router.delete('/:id', async (req, res) => {
-  // await admin
-  //   .auth()
-  //   .verifyIdToken(req.headers.authorization)
-  //   .then((decodedToken) => {
-  triplists_col
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+
+  await triplists_col
     .findOneAndDelete({
       '_id': db.id(req.params.id),
-      'user_id': 'sample_uid', //decoedToken
+      'uid': uid,
     })
     .then(() => {
       res.send({
@@ -334,7 +328,6 @@ router.delete('/:id', async (req, res) => {
         message: error.message
       })
     })
-  //   })
 })
 
 module.exports = router
