@@ -60,6 +60,7 @@ const threadPipeline = async (id) => {
       $project: {
         'topic_id': 1,
         'title': 1,
+        'short_desc': 1,
         'thumbnail': 1,
         'vote': 1,
         'popularity': {

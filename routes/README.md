@@ -231,47 +231,26 @@ Retrieve all triplist(s)
 
 **Body: list of documents**
 ```sh
-[
-    {
-        "_id": "5e920850bed37e391b132a9d",
-        "title": "example title",
-        "description": "example description",
-        "thumbnail": null,
-        "threads": [],
-        "created_at": "2020-04-11T18:11:28.305Z",
-        "numThreads": 0
-    },
-    {
-        "_id": "5e9203006ada3c34bbc8b612",
-        "title": "example title",
-        "description": "example description",
-        "thumbnail": null,
-        "threads": [
-            {
-                "_id": "5e16db7d3c0dffa34b663e03",
-                "topic_id": 39137338,
-                "title": "รีวิว \"ขอแฟนที่วัดหลงซาน\" พร้อมวิธีขอแบบละเอียดค่ะ ( by เราเขียนแฟนถ่าย)",
-                "thumbnail": "https://f.ptcdn.info/464/065/000/pw4oxvbtzo1WslcZ2XI-s.jpg",
-                "vote": 5,
-                "created_at": "2019-09-12T08:28:05.000Z",
-                "popularity": 199,
-                "added": "2020-04-11T17:47:01.065Z"
-            },
-            {
-                "_id": "5e16db7d3c0dffa34b663dff",
-                "topic_id": 33628809,
-                "title": "Tokyo, Hakone, Kawaguchiko golden week และปิด Owakudani: D1 3 พค 2558 Shinjuku Gyoen, Harajuku, Meiji shrine, Shibuya",
-                "thumbnail": "http://f.ptcdn.info/181/031/000/1431171739-fuji-o.jpg",
-                "vote": 12,
-                "created_at": "2015-06-09T04:44:40.000Z",
-                "popularity": 3,
-                "added": "2020-04-11T17:47:01.065Z"
-            }
-        ],
-        "created_at": "2020-04-11T17:48:48.639Z",
-        "numThreads": 2
-    }
-]
+{
+    "_id": "5e9203006ada3c34bbc8b612",
+    "title": "example title",
+    "description": "example description",
+    "thumbnail": null,
+    "threads": [
+        {
+            "_id": "5e9a0ed65bc2507a55907e28",
+            "topic_id": 39808635,
+            "title": "How To \"พาพ่อแม่ไปเที่ยวญี่ปุ่น\" พาเที่ยวภูมิภาคTohoku #เที่ยวแหลก-เรียบ",
+            "short_desc": "สวัสดีค่า หลังจากที่กระแสกระทู้ How to \"พาพ่อแม่ไปญี่ปุ่น\" ทั้ง 2 อันได้รับเสียงตอบรับที่ดี > https://pantip.com/topic/36069962 > https://pantip.com/topic/37211402 มีคนขอแพลนเที่ยวมาทั้งในพันทิพย์และ Inbox เพจเลย https://www.facebook.com/goeatanythin",
+            "thumbnail": "https://f.ptcdn.info/993/068/000/q8tq6b6deW4HW4qlUr6-o.png",
+            "vote": 6,
+            "popularity": 5,
+            "added": "2020-04-18T14:09:35.559Z"
+        }
+    ],
+    "created_at": "2020-04-18T14:09:35.572Z",
+    "numThreads": 1
+}
 ```
 
 ### 2. POST api/my-triplist/triplists/add
@@ -342,13 +321,14 @@ Create a new triplist with an initialized thread
     "thumbnail": null,
     "threads": [
         {
-            "_id": "5e16db7d3c0dffa34b663e03",
-            "topic_id": 39137338,
-            "title": "รีวิว \"ขอแฟนที่วัดหลงซาน\" พร้อมวิธีขอแบบละเอียดค่ะ ( by เราเขียนแฟนถ่าย)",
-            "thumbnail": "https://f.ptcdn.info/464/065/000/pw4oxvbtzo1WslcZ2XI-s.jpg",
-            "vote": 5,
-            "popularity": 199,
-            "added": "2020-04-11T19:04:21.426Z"
+            "_id": "5e9a0ed65bc2507a55907e28",
+            "topic_id": 39808635,
+            "title": "How To \"พาพ่อแม่ไปเที่ยวญี่ปุ่น\" พาเที่ยวภูมิภาคTohoku #เที่ยวแหลก-เรียบ",
+            "short_desc": "สวัสดีค่า หลังจากที่กระแสกระทู้ How to \"พาพ่อแม่ไปญี่ปุ่น\" ทั้ง 2 อันได้รับเสียงตอบรับที่ดี > https://pantip.com/topic/36069962 > https://pantip.com/topic/37211402 มีคนขอแพลนเที่ยวมาทั้งในพันทิพย์และ Inbox เพจเลย https://www.facebook.com/goeatanythin",
+            "thumbnail": "https://f.ptcdn.info/993/068/000/q8tq6b6deW4HW4qlUr6-o.png",
+            "vote": 6,
+            "popularity": 5,
+            "added": "2020-04-18T14:09:35.559Z"
         }
     ],
     "created_at": "2020-04-11T19:04:21.951Z",
@@ -386,16 +366,17 @@ Get a triplist by id
     "thumbnail": null,
     "threads": [
         {
-            "_id": "5e16db7d3c0dffa34b663e03",
-            "topic_id": 39137338,
-            "title": "รีวิว \"ขอแฟนที่วัดหลงซาน\" พร้อมวิธีขอแบบละเอียดค่ะ ( by เราเขียนแฟนถ่าย)",
-            "thumbnail": "https://f.ptcdn.info/464/065/000/pw4oxvbtzo1WslcZ2XI-s.jpg",
-            "vote": 5,
-            "popularity": 199,
-            "added": "2020-04-11T19:04:21.426Z"
+            "_id": "5e9a0ed65bc2507a55907e28",
+            "topic_id": 39808635,
+            "title": "How To \"พาพ่อแม่ไปเที่ยวญี่ปุ่น\" พาเที่ยวภูมิภาคTohoku #เที่ยวแหลก-เรียบ",
+            "short_desc": "สวัสดีค่า หลังจากที่กระแสกระทู้ How to \"พาพ่อแม่ไปญี่ปุ่น\" ทั้ง 2 อันได้รับเสียงตอบรับที่ดี > https://pantip.com/topic/36069962 > https://pantip.com/topic/37211402 มีคนขอแพลนเที่ยวมาทั้งในพันทิพย์และ Inbox เพจเลย https://www.facebook.com/goeatanythin",
+            "thumbnail": "https://f.ptcdn.info/993/068/000/q8tq6b6deW4HW4qlUr6-o.png",
+            "vote": 6,
+            "popularity": 5,
+            "added": "2020-04-18T14:09:35.559Z"
         }
     ],
-    "created_at": "2020-04-11T19:04:21.951Z",
+    "created_at": "2020-04-18T14:09:35.572Z",
     "numThreads": 1
 }
 ```
@@ -526,15 +507,16 @@ Get all favorite thread(s)
     "_id": "5e91e4dfc2eccaa2e04bc2f6",
     "favThreads": [
         {
-            "_id": "5e16db7d3c0dffa34b663df3",
-            "topic_id": 39141575,
-            "title": "พาเดินเล่น ดูร้านอาหาร อาคารผู้โดยสาร 2 (ภายในประเทศ) สนามบินดอนเมือง",
-            "thumbnail": "https://f.ptcdn.info/489/065/000/pw7n956p0nwLbxtCTdPt-s.jpg",
-            "vote": 8,
-            "popularity": 52,
-            "added": "2020-04-11T17:31:00.202Z"
+            "_id": "5e9a0ed65bc2507a55907e28",
+            "topic_id": 39808635,
+            "title": "How To \"พาพ่อแม่ไปเที่ยวญี่ปุ่น\" พาเที่ยวภูมิภาคTohoku #เที่ยวแหลก-เรียบ",
+            "short_desc": "สวัสดีค่า หลังจากที่กระแสกระทู้ How to \"พาพ่อแม่ไปญี่ปุ่น\" ทั้ง 2 อันได้รับเสียงตอบรับที่ดี > https://pantip.com/topic/36069962 > https://pantip.com/topic/37211402 มีคนขอแพลนเที่ยวมาทั้งในพันทิพย์และ Inbox เพจเลย https://www.facebook.com/goeatanythin",
+            "thumbnail": "https://f.ptcdn.info/993/068/000/q8tq6b6deW4HW4qlUr6-o.png",
+            "vote": 6,
+            "popularity": 5,
+            "added": "2020-04-18T14:09:35.559Z"
         }
-    ]
+    ],
 }
 ```
 
