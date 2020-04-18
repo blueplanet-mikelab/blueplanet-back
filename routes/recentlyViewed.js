@@ -17,8 +17,8 @@ const checkTokenRevoke = async (res, idToken) => {
     res.status(401).send({
       message: 'Unauthorized: Access to this resource is denied.'
     })
+    return
   }
-  
   var checkRevoked = true;
   return await admin
     .auth()
@@ -32,11 +32,13 @@ const checkTokenRevoke = async (res, idToken) => {
         res.status(401).send({
           message: 'Reauthenticate required'
         })
+        return
       } else {
         // Token is invalid.
         res.status(401).send({
           message: error.message
         })
+        return
       }
     });
 }
@@ -64,6 +66,7 @@ const threadPipeline = async (id) => {
 
 const isAdded = async (uid, id) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   return await recently_viewed_col
     .findOne({
@@ -94,6 +97,7 @@ const updateRecentThread = async (res, filter, operator) => {
 
 router.get('/', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   await recently_viewed_col
     .aggregate([
@@ -141,6 +145,7 @@ router.get('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   if (await isAdded(uid, req.params.id) === true) {
     await updateRecentThread(res,

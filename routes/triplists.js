@@ -17,6 +17,7 @@ const checkTokenRevoke = async (res, idToken) => {
     res.status(401).send({
       message: 'Unauthorized: Access to this resource is denied.'
     })
+    return
   }
   var checkRevoked = true;
   return await admin
@@ -31,11 +32,13 @@ const checkTokenRevoke = async (res, idToken) => {
         res.status(401).send({
           message: 'Reauthenticate required'
         })
+        return
       } else {
         // Token is invalid.
         res.status(401).send({
           message: error.message
         })
+        return
       }
     });
 }
@@ -149,6 +152,7 @@ const isAdded = async (triplist_id, uid, thread_id) => {
 // Retrieve all triplist(s)
 router.get('/', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   await triplists_col
     .aggregate([
@@ -183,6 +187,8 @@ router.post('/add', async (req, res) => {
   }
 
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
+
   await createTriplist(req, res, uid, [])
 })
 
@@ -199,12 +205,15 @@ router.post('/add/:id', async (req, res) => {
     thread = result
   })
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
+
   await createTriplist(req, res, uid, thread)
 })
 
 // Get a triplist by id
 router.get('/:id', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   await triplists_col
     .aggregate([
@@ -257,6 +266,8 @@ router.put('/:id', async (req, res) => {
   }
 
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
+
   await updateTriplist(res,
     {
       _id: db.id(req.params.id),
@@ -270,6 +281,7 @@ router.put('/:id', async (req, res) => {
 // Add a thread to a triplist
 router.put('/:id/add/:threadId', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   if (await isAdded(req.params.id, uid, req.params.threadId) === true) {
     res.status(200).send({
@@ -299,6 +311,7 @@ router.put('/:id/add/:threadId', async (req, res) => {
 // Remove a thread from a triplist
 router.delete('/:id/remove/:threadId', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   await updateTriplist(res,
     {
@@ -318,6 +331,7 @@ router.delete('/:id/remove/:threadId', async (req, res) => {
 // Remove a triplist
 router.delete('/:id', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   await triplists_col
     .findOneAndDelete({

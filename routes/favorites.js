@@ -17,8 +17,8 @@ const checkTokenRevoke = async (res, idToken) => {
     res.status(401).send({
       message: 'Unauthorized: Access to this resource is denied.'
     })
+    return
   }
-  
   var checkRevoked = true;
   return await admin
     .auth()
@@ -32,11 +32,13 @@ const checkTokenRevoke = async (res, idToken) => {
         res.status(401).send({
           message: 'Reauthenticate required'
         })
+        return
       } else {
         // Token is invalid.
         res.status(401).send({
           message: error.message
         })
+        return
       }
     });
 }
@@ -113,6 +115,7 @@ const isAdded = async (uid, id) => {
 // Get all favorite thread(s)
 router.get('/', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   await favorites_col
     .aggregate([
@@ -156,6 +159,7 @@ router.get('/', async (req, res) => {
 // Get boolean of a thread if it has been added by id
 router.get('/:id', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   await isAdded(uid, req.params.id) === true
     ? res.status(200).send(true)
@@ -165,6 +169,7 @@ router.get('/:id', async (req, res) => {
 // Add a thread to favorite
 router.put('/:id', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   if (await isAdded(uid, req.params.id) === true) {
     res.status(200).send({
@@ -190,6 +195,7 @@ router.put('/:id', async (req, res) => {
 // Remove a thread from favorite
 router.delete('/:id', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   await updateFavThread(res, uid, {
     $pull: {
