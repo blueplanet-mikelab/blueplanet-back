@@ -171,6 +171,7 @@ router.put('/:id', async (req, res) => {
       },
       {
         $set: {
+          recentThreads: recentThread,
           added: new Date()
         }
       })
