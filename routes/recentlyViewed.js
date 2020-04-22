@@ -65,9 +65,6 @@ const threadPipeline = async (id) => {
 }
 
 const isAdded = async (uid, id) => {
-  var uid = await checkTokenRevoke(res, req.headers.authorization)
-  if (!uid) return
-
   return await recently_viewed_col
     .findOne({
       uid: uid,
