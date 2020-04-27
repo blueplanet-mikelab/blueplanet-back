@@ -271,7 +271,7 @@ router.get('/filterQuery/:page', async (req, res) => {
     res.send({
       threads: doc[0].result,
       total_page: Math.ceil(doc[0].total_page / 10),
-      current_page: page
+      current_page: Number(page)
     })
   })
 })

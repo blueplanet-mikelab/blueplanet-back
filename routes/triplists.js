@@ -292,7 +292,7 @@ router.get('/:id/:page', async (req, res) => {
       res.send({
         triplist: triplist[0],
         total_page: Math.ceil(triplist[0].num_threads / resultPerPage),
-        current_page: page
+        current_page: Number(page)
       })
     })
     .catch((error) => {

@@ -118,7 +118,7 @@ router.get('/:page', async (req, res) => {
   if (!uid) return
 
   const page = req.params.page || 1
-  const resultPerPage = 1;
+  const resultPerPage = 10;
 
   await favorites_col
     .find({ uid: uid })
@@ -133,8 +133,8 @@ router.get('/:page', async (req, res) => {
           .then((favorite) => {
             res.send({
               favorite: _.pick(favorite, '_id', 'threads', 'num_threads'),
-              total_page: Math.ceil(favorite.num_threads / resultPerPage),
-              current_page: page
+              total_page: Math.ceil(favorite[0].num_threads / resultPerPage),
+              current_page: Number(page)
             })
           })
       } else {
@@ -175,8 +175,8 @@ router.get('/:page', async (req, res) => {
           .then((favorite) => {
             res.send({
               favorite: favorite[0],
-              total_page: Math.ceil(favorite.num_threads / resultPerPage),
-              current_page: page
+              total_page: Math.ceil(favorite[0].num_threads / resultPerPage),
+              current_page: Number(page)
             })
           })
       }

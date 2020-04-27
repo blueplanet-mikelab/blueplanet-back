@@ -76,7 +76,7 @@ Get threads both with or without filters.
         }
     ],
     "total_page": 12,
-    "current_page": "1"
+    "current_page": 1
 }
 ```
 
@@ -404,7 +404,7 @@ Get a triplist by id
         ]
     },
     "total_page": 1,
-    "current_page": "1"
+    "current_page": 1
 }
 ```
 
@@ -552,8 +552,8 @@ Get all favorite thread(s)
         ],
         "num_threads": 1
     },
-    "total_page": null,
-    "current_page": "1"
+    "total_page": 1,
+    "current_page": 1
 }
 ```
 
