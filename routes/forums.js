@@ -264,7 +264,7 @@ function getCondition(queryString) {
   return conds
 }
 
-router.get('/filterQuery/:page', async (req, res) => {
+router.get('/:page/filter', async (req, res) => {
   const page = req.params.page || 1
   conds = getCondition(req.query)
   threads_col.aggregate(pipeline(conds, page)).then((doc) => {

@@ -1,6 +1,6 @@
 # Routes Documents
 ## 1. ForunList page
-### 1. GET api/forums/filterQuery?/:page
+### 1. GET api/forums/:page/filter?
 Get threads both with or without filters.
 
 #### Request
