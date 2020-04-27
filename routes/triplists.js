@@ -244,7 +244,7 @@ router.get('/:id/:page', async (req, res) => {
   if (!uid) return
 
   const page = req.params.page || 1
-  const resultPerPage = 1;
+  const resultPerPage = 10;
 
   await triplists_col
     .aggregate([
@@ -291,7 +291,7 @@ router.get('/:id/:page', async (req, res) => {
     .then((triplist) => {
       res.send({
         triplist: triplist[0],
-        total_page: Math.ceil(triplist[0].num_threads ? 0 : 1 / resultPerPage),
+        total_page: Math.ceil(triplist[0].num_threads / resultPerPage),
         current_page: page
       })
     })

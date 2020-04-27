@@ -130,13 +130,13 @@ router.get('/:page', async (req, res) => {
           threads: empty,
           num_threads: empty.length
         })
-        .then((favorite) => {
-          res.send({
-            favorite: _.pick(favorite, '_id', 'threads', 'num_threads'),
-            total_page: Math.ceil(favorite.num_threads ? 0 : 1 / resultPerPage),
-            current_page: page
+          .then((favorite) => {
+            res.send({
+              favorite: _.pick(favorite, '_id', 'threads', 'num_threads'),
+              total_page: Math.ceil(favorite.num_threads / resultPerPage),
+              current_page: page
+            })
           })
-        })
       } else {
         favorites_col
           .aggregate([
@@ -175,7 +175,7 @@ router.get('/:page', async (req, res) => {
           .then((favorite) => {
             res.send({
               favorite: favorite[0],
-              total_page: Math.ceil(favorite.num_threads ? 0 : 1 / resultPerPage),
+              total_page: Math.ceil(favorite.num_threads / resultPerPage),
               current_page: page
             })
           })

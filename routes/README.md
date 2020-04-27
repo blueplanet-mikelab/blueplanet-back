@@ -1,6 +1,6 @@
 # Routes Documents
 ## 1. ForunList page
-### 1. GET api/forums/filterQuery?
+### 1. GET api/forums/filterQuery?/:page
 Get threads both with or without filters.
 
 #### Request
@@ -14,8 +14,12 @@ Get threads both with or without filters.
 | themes | ["Mountain", "Historical", "Sightseeing"] | true
 | budget_min | 0 - 50000 | 0
 | budget_max | 0 - 50000 | 50000
-| result_page | 1 | 1
 | sortby | upvoted, popular, newest, oldest | popular
+
+**Params:**
+| params | value | explaination
+|---|---|---|
+| page | 1, 2, 3, ... | current page |
 
 #### Response
 **Header**
@@ -24,38 +28,56 @@ Get threads both with or without filters.
 **Body: list of documents**
 ```sh
 {
-        "_id": "5e16dc663c0dffa34b6642a4",
-        "topic_id": 38348020,
-        "title": "USJ Theme christmas มันดีเหลือเกิน !!!",
-        "thumbnail": "https://f.ptcdn.info/327/061/000/pjgvh0129jfrr6ok4DJ-s.jpg",
-        "countries": [
-            {
-                "country": "JP",
-                "latitude": 36.204824,
-                "longitude": 138.252924,
-                "nameEnglish": "Japan",
-                "nameThai": [
-                    "ญี่ปุ่น",
-                    "โอกินาว่า",
-                    "โอซากา",
-                    "เกียวโต",
-                    "เกียวโต",
-                    "ฮอกไกโด"
-                ]
-            }
-        ],
-        "duration_type": 1,
-        "duration": {
-            "days": 1,
-            "label": "1 Day"
-        },
-        "theme": [],
-        "view": 2541,
-        "vote": 1,
-        "created_at": "2019-01-09T04:46:30.000Z",
-        "floorBudget": 15907,
-        "popularity": 6
-    }
+    "threads": [
+        {
+            "_id": "5ea598215bc25026e32d350a",
+            "topic_id": 39807158,
+            "title": "ป า กี ส ถ า น .. ถ้าได้ไปแล้วจะหลงรัก by ป้าเกษ สูงวัยลุยไปทั่ว",
+            "thumbnail": "https://f.ptcdn.info/976/068/000/q8ruxhopkLr87CU11Hg-o.jpg",
+            "countries": [
+                {
+                    "country": "PK",
+                    "latitude": 30.375321,
+                    "longitude": 69.345116,
+                    "nameEnglish": "Pakistan",
+                    "nameThai": [
+                        "ปากีสถาน"
+                    ]
+                }
+            ],
+            "duration_type": 1,
+            "duration": {
+                "days": 1,
+                "label": "1 Day"
+            },
+            "theme": [
+                {
+                    "theme": "Photography",
+                    "count": 13
+                },
+                {
+                    "theme": "Mountain",
+                    "count": 4
+                },
+                {
+                    "theme": "Sea",
+                    "count": 3
+                },
+                {
+                    "theme": "Eating",
+                    "count": 3
+                }
+            ],
+            "view": 2255,
+            "vote": 15,
+            "created_at": "1586918325",
+            "floor_budget": 37412,
+            "popularity": 199
+        }
+    ],
+    "total_page": 12,
+    "current_page": "1"
+}
 ```
 
 ## 2. Home Page
@@ -335,7 +357,7 @@ Create a new triplist with an initialized thread
 }
 ```
 
-### 4. GET api/my-triplist/triplists/:id
+### 4. GET api/my-triplist/triplists/:id/:page
 Get a triplist by id
 
 #### Request
@@ -347,11 +369,12 @@ Get a triplist by id
 | params | value | explaination
 |---|---|---|
 | id | 5e16db7d3c0dffa34b663e03 | id of the triplist |
+| page | 1, 2, 3, ... | current page |
 
 **QueryString:**
 | query | value | default
 |---|---|---|
-| sortby | latest, upvoted, popular | null |
+| sortby | latest, vote, popular | latest |
 
 #### Response
 **Header**
@@ -360,24 +383,28 @@ Get a triplist by id
 **Body: document**
 ```sh
 {
-    "_id": "5e9214b58383574013f4270c",
-    "title": "example title",
-    "description": "example description",
-    "thumbnail": null,
-    "threads": [
-        {
-            "_id": "5e9a0ed65bc2507a55907e28",
-            "topic_id": 39808635,
-            "title": "How To \"พาพ่อแม่ไปเที่ยวญี่ปุ่น\" พาเที่ยวภูมิภาคTohoku #เที่ยวแหลก-เรียบ",
-            "short_desc": "สวัสดีค่า หลังจากที่กระแสกระทู้ How to \"พาพ่อแม่ไปญี่ปุ่น\" ทั้ง 2 อันได้รับเสียงตอบรับที่ดี > https://pantip.com/topic/36069962 > https://pantip.com/topic/37211402 มีคนขอแพลนเที่ยวมาทั้งในพันทิพย์และ Inbox เพจเลย https://www.facebook.com/goeatanythin",
-            "thumbnail": "https://f.ptcdn.info/993/068/000/q8tq6b6deW4HW4qlUr6-o.png",
-            "vote": 6,
-            "popularity": 5,
-            "added": "2020-04-18T14:09:35.559Z"
-        }
-    ],
-    "created_at": "2020-04-18T14:09:35.572Z",
-    "numThreads": 1
+    "triplist": {
+        "_id": "5ea6dfac10f159424073b783",
+        "title": "example title",
+        "description": "example description",
+        "thumbnail": null,
+        "num_threads": 2,
+        "created_at": "2020-04-27T13:35:40.290Z",
+        "threads": [
+            {
+                "_id": "5ea598215bc25026e32d3506",
+                "topic_id": 39814055,
+                "title": "อาชีพพนักงานบนเรือสำราญ",
+                "short_desc": "🚢 อาชีพลูกเรือสำราญ 🚢 อีกหนึ่งอาชีพ ที่เหมาะสำหรับคนที่อยากจะลองทำงานต่างประเทศ❗️ “ดีจังเลย ได้ไปทำงานบนเรือสำราญ ได้เที่ยวฟรี รายได้ก็ดี กินอยู่ฟรีบนเรือ แถมได้ฝึกภาษาด้วย” นี่เป็นคำพูดของหลายๆคนเมื่อรู้ว่าแนตเคยไปทำงานลูกเรือบนเรือสำราญที่ USA 🇺🇸 ส",
+                "thumbnail": "https://f.ptcdn.info/020/069/000/q8x0nqp4l1AwFLZE0hl-o.jpg",
+                "vote": 49,
+                "popularity": 5480,
+                "added": "2020-04-27T13:35:40.199Z"
+            }
+        ]
+    },
+    "total_page": 1,
+    "current_page": "1"
 }
 ```
 
@@ -484,7 +511,7 @@ Remove a triplist
 }
 ```
 
-### 9. GET api/my-triplist/favorites
+### 9. GET api/my-triplist/favorites/:page
 Get all favorite thread(s)
 
 #### Request
@@ -492,10 +519,15 @@ Get all favorite thread(s)
 'Content-Type': 'application/json'
 'Authorization': 'OAuth 2.0'
 
+**Params:**
+| params | value | explaination
+|---|---|---|
+| page | 1, 2, 3, ... | current page |
+
 **QueryString:**
 | query | value | default
 |---|---|---|
-| sortby | latest, upvoted, popular | lastest |
+| sortby | latest, vote, popular | lastest |
 
 #### Response
 **Header**
@@ -504,19 +536,24 @@ Get all favorite thread(s)
 **Body: document**
 ```sh
 {
-    "_id": "5e91e4dfc2eccaa2e04bc2f6",
-    "favThreads": [
-        {
-            "_id": "5e9a0ed65bc2507a55907e28",
-            "topic_id": 39808635,
-            "title": "How To \"พาพ่อแม่ไปเที่ยวญี่ปุ่น\" พาเที่ยวภูมิภาคTohoku #เที่ยวแหลก-เรียบ",
-            "short_desc": "สวัสดีค่า หลังจากที่กระแสกระทู้ How to \"พาพ่อแม่ไปญี่ปุ่น\" ทั้ง 2 อันได้รับเสียงตอบรับที่ดี > https://pantip.com/topic/36069962 > https://pantip.com/topic/37211402 มีคนขอแพลนเที่ยวมาทั้งในพันทิพย์และ Inbox เพจเลย https://www.facebook.com/goeatanythin",
-            "thumbnail": "https://f.ptcdn.info/993/068/000/q8tq6b6deW4HW4qlUr6-o.png",
-            "vote": 6,
-            "popularity": 5,
-            "added": "2020-04-18T14:09:35.559Z"
-        }
-    ],
+    "favorite": {
+        "_id": "5ea70fc38c51e8709ed73027",
+        "threads": [
+            {
+                "_id": "5ea598215bc25026e32d3506",
+                "topic_id": 39814055,
+                "title": "อาชีพพนักงานบนเรือสำราญ",
+                "short_desc": "🚢 อาชีพลูกเรือสำราญ 🚢 อีกหนึ่งอาชีพ ที่เหมาะสำหรับคนที่อยากจะลองทำงานต่างประเทศ❗️ “ดีจังเลย ได้ไปทำงานบนเรือสำราญ ได้เที่ยวฟรี รายได้ก็ดี กินอยู่ฟรีบนเรือ แถมได้ฝึกภาษาด้วย” นี่เป็นคำพูดของหลายๆคนเมื่อรู้ว่าแนตเคยไปทำงานลูกเรือบนเรือสำราญที่ USA 🇺🇸 ส",
+                "thumbnail": "https://f.ptcdn.info/020/069/000/q8x0nqp4l1AwFLZE0hl-o.jpg",
+                "vote": 49,
+                "popularity": 5480,
+                "added": "2020-04-27T17:01:14.101Z"
+            }
+        ],
+        "num_threads": 1
+    },
+    "total_page": null,
+    "current_page": "1"
 }
 ```
 
@@ -601,24 +638,13 @@ Remove a thread from favorite
 **Header**
 'Content-Type' : 'application/json'
 
-**Body: document**
+**Body: list of documents**
 ```sh
 {
-    "_id": "5e91f420c2eccaa2e04bd56d",
-    "recentThreads": [
-        {
-            "_id": "5e16db7d3c0dffa34b663e04",
-            "topic_id": 39144715,
-            "title": "### สะพายกล้อง Canon EOS 200D II เที่ยว แม่ฮ่องสอน – น่าน ###",
-            "added": "2020-04-11T16:46:13.426Z"
-        },
-        {
-            "_id": "5e16db7d3c0dffa34b663dfd",
-            "topic_id": 39141623,
-            "title": "จากอมก๋อย สู่แม่ลาน้อย ให้ร่างกายและใบหน้าได้ปะทะกลิ่นหมอกไอฝน",
-            "added": "2020-04-11T16:45:32.270Z"
-        }
-    ]
+    "_id": "5ea598215bc25026e32d3507",
+    "topic_id": 39834825,
+    "title": "รีวิวเที่ยวเกาหลีหน้าหนาว เค้าท์ดาวน์ปีใหม่ ตะลุยกินอาหารร้านเด็ด คาเฟ่ฮิปๆ [Korea Over Year]",
+    "added": "2020-04-27T14:35:55.016Z"
 }
 ```
 
