@@ -12,6 +12,9 @@ const triplists_col = db.get(process.env.MONGODB_TRIPLISTS_COLLECTION)
 
 const admin = require('../firebase-admin')
 
+const multer = require('multer')
+const uuidv4 = require('uuid/v4');
+
 const checkTokenRevoke = async (res, idToken) => {
   if (!idToken) {
     res.status(401).send({
@@ -87,13 +90,40 @@ const threadPipeline = async (id) => {
     })
 }
 
+const DIR = './public/'
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, DIR)
+  },
+  filename: (req, file, cb) => {
+    const fileName = file.originalname.toLowerCase().split(' ').join('-');
+    cb(null, uuidv4() + '-' + fileName)
+  }
+})
+
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype == 'image/png' || file.mimetype == 'image/jpg' || file.mimetype == 'image/jpeg') {
+      cb(null, true);
+    } else {
+      cb(null, false);
+      return cb(new Error('Only .png, .jpg and .jpeg format allowed.'));
+    }
+  }
+})
+
+
 const createTriplist = async (req, res, uid, thread) => {
+  const url = req.protocol + '://' + req.get('host')
+  const thumbnail = url + '/public/' + req.file.filename
+
   await triplists_col
     .insert({
       uid: uid,
       title: req.body.title,
       description: req.body.description,
-      thumbnail: req.body.thumbnail,
+      thumbnail: thumbnail,
       threads: thread,
       num_threads: thread.length,
       created_at: new Date()
@@ -178,7 +208,7 @@ router.get('/', async (req, res) => {
 })
 
 // Create a new triplist without an initialized thread
-router.post('/add', async (req, res) => {
+router.post('/add', upload.single('thumbnail'), async (req, res) => {
   if (!req.body.title) {
     res.status(500).send({
       message: 'Title cannot be empty'
@@ -191,7 +221,7 @@ router.post('/add', async (req, res) => {
 })
 
 // Create a new triplist with an initialized thread
-router.post('/add/:id', async (req, res) => {
+router.post('/add/:id', upload.single('thumbnail'), async (req, res) => {
   if (!req.body.title) {
     res.status(500).send({
       message: 'Title cannot be empty'
@@ -261,7 +291,7 @@ router.get('/:id/:page', async (req, res) => {
     .then((triplist) => {
       res.send({
         triplist: triplist[0],
-        total_page: Math.ceil(triplist[0].num_threads / resultPerPage),
+        total_page: Math.ceil(triplist[0].num_threads ? 0 : 1 / resultPerPage),
         current_page: page
       })
     })
@@ -273,7 +303,7 @@ router.get('/:id/:page', async (req, res) => {
 })
 
 // Update a detail of triplist by id
-router.put('/:id', async (req, res) => {
+router.put('/:id', upload.single('thumbnail'), async (req, res) => {
   if (!req.body.title) {
     res.status(500).send({
       message: 'Title cannot be empty'
@@ -283,13 +313,22 @@ router.put('/:id', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
   if (!uid) return
 
+  const url = req.protocol + '://' + req.get('host')
+  const thumbnail = url + '/public/' + req.file.filename
+
+  var updated = {
+    title: req.body.title,
+    description: req.body.description,
+    thumbnail: thumbnail
+  }
+
   await updateTriplist(res,
     {
       _id: db.id(req.params.id),
       uid: uid
     },
     {
-      $set: req.body
+      $set: updated
     })
 })
 
