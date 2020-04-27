@@ -68,7 +68,7 @@ const isAdded = async (uid, id) => {
   return await recently_viewed_col
     .findOne({
       uid: uid,
-      recentThreads: {
+      threads: {
         $elemMatch: {
           _id: id
         }
@@ -93,8 +93,10 @@ const updateRecentThread = async (res, filter, operator) => {
 }
 
 router.get('/', async (req, res) => {
-  var uid = await checkTokenRevoke(res, req.headers.authorization)
-  if (!uid) return
+  // var uid = await checkTokenRevoke(res, req.headers.authorization)
+  // if (!uid) return
+
+  var uid = 'p4TzOYEO4hUps4J74DpJG5sGJYs2'
 
   await recently_viewed_col
     .aggregate([
@@ -105,33 +107,33 @@ router.get('/', async (req, res) => {
       },
       {
         $unwind: {
-          'path': '$recentThreads',
+          'path': '$threads',
           'preserveNullAndEmptyArrays': true
         }
       },
       {
         $sort: {
-          'recentThreads.added': -1
+          'threads.added': -1
         }
       },
       {
         $group: {
           '_id': '$_id',
           'uid': { '$first': '$uid' },
-          'recentThreads': { '$push': '$recentThreads' }
+          'threads': { '$push': '$threads' }
         }
       },
       {
         $project: {
-          'recentThreads': 1,
+          'threads': 1,
         }
       },
       {
         $limit: 20
       }
     ])
-    .then((recentThreads) => {
-      res.send(recentThreads[0])
+    .then((threads) => {
+      res.send(threads[0].threads)
     })
     .catch((error) => {
       res.status(500).send({
@@ -141,14 +143,16 @@ router.get('/', async (req, res) => {
 })
 
 router.put('/:id', async (req, res) => {
-  var uid = await checkTokenRevoke(res, req.headers.authorization)
-  if (!uid) return
+  // var uid = await checkTokenRevoke(res, req.headers.authorization)
+  // if (!uid) return
+
+  var uid = 'p4TzOYEO4hUps4J74DpJG5sGJYs2'
 
   if (await isAdded(uid, req.params.id) === true) {
     await updateRecentThread(res,
       {
         uid: uid,
-        recentThreads: {
+        threads: {
           $elemMatch: {
             _id: req.params.id
           }
@@ -156,7 +160,7 @@ router.put('/:id', async (req, res) => {
       },
       {
         $set: {
-          'recentThreads.$.added': new Date()
+          'threads.$.added': new Date()
         }
       })
   } else {
@@ -171,7 +175,7 @@ router.put('/:id', async (req, res) => {
       },
       {
         $addToSet: {
-          recentThreads: {
+          threads: {
             $each: recentThread
           }
         }

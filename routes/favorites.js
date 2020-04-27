@@ -46,13 +46,13 @@ const checkTokenRevoke = async (res, idToken) => {
 const selectSorting = (sortBy) => {
   switch (sortBy) {
     case 'latest':
-      return { 'favThreads.added': -1 }
-    case 'upvoted':
-      return { 'favThreads.vote': -1 }
+      return { 'threads.added': -1 }
+    case 'vote':
+      return { 'threads.vote': -1 }
     case 'popular':
-      return { 'favThreads.popularity': -1 }
+      return { 'threads.popularity': -1 }
     default:
-      return { 'favThreads.added': -1 }
+      return { 'threads.added': -1 }
   }
 }
 
@@ -102,7 +102,7 @@ const isAdded = async (uid, id) => {
   return await favorites_col
     .findOne({
       uid: uid,
-      favThreads: {
+      threads: {
         $elemMatch: {
           _id: id
         }
@@ -113,41 +113,73 @@ const isAdded = async (uid, id) => {
     })
 }
 // Get all favorite thread(s)
-router.get('/', async (req, res) => {
+router.get('/:page', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
   if (!uid) return
 
+  const page = req.params.page || 1
+  const resultPerPage = 1;
+
   await favorites_col
-    .aggregate([
-      {
-        $match: {
-          uid: uid
-        }
-      },
-      {
-        $unwind: {
-          'path': '$favThreads',
-          'preserveNullAndEmptyArrays': true
-        }
-      },
-      {
-        $sort: selectSorting(req.query.sort)
-      },
-      {
-        $group: {
-          '_id': '$_id',
-          'uid': { '$first': '$uid' },
-          'favThreads': { '$push': '$favThreads' }
-        }
-      },
-      {
-        $project: {
-          'favThreads': 1
-        }
-      },
-    ])
+    .find({ uid: uid })
     .then((favorites) => {
-      res.send(favorites[0])
+      if (favorites.length == 0) {
+        const empty = [];
+        favorites_col.insert({
+          uid: uid,
+          threads: empty,
+          num_threads: empty.length
+        })
+        .then((favorite) => {
+          res.send({
+            favorite: _.pick(favorite, '_id', 'threads', 'num_threads'),
+            total_page: Math.ceil(favorite.num_threads ? 0 : 1 / resultPerPage),
+            current_page: page
+          })
+        })
+      } else {
+        favorites_col
+          .aggregate([
+            {
+              $match: {
+                uid: uid
+              }
+            },
+            {
+              $unwind: {
+                'path': '$threads',
+                'preserveNullAndEmptyArrays': true
+              }
+            },
+            {
+              $sort: selectSorting(req.query.sortby)
+            },
+            {
+              $group: {
+                '_id': '$_id',
+                'uid': { '$first': '$uid' },
+                'threads': { '$push': '$threads' }
+              }
+            },
+            {
+              $project: {
+                threads: {
+                  $slice: ['$threads', (resultPerPage * page) - resultPerPage, resultPerPage]
+                },
+                num_threads: {
+                  $size: '$threads'
+                }
+              }
+            }
+          ])
+          .then((favorite) => {
+            res.send({
+              favorite: favorite[0],
+              total_page: Math.ceil(favorite.num_threads ? 0 : 1 / resultPerPage),
+              current_page: page
+            })
+          })
+      }
     })
     .catch((error) => {
       res.status(500).send({
@@ -183,13 +215,12 @@ router.put('/:id', async (req, res) => {
 
     await updateFavThread(res, uid, {
       $addToSet: {
-        favThreads: {
+        threads: {
           $each: favThread
         }
       }
     }, 'Added to Favorite.')
   }
-  // })
 })
 
 // Remove a thread from favorite
@@ -199,7 +230,7 @@ router.delete('/:id', async (req, res) => {
 
   await updateFavThread(res, uid, {
     $pull: {
-      favThreads: {
+      threads: {
         _id: req.params.id
       }
     }

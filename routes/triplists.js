@@ -43,26 +43,15 @@ const checkTokenRevoke = async (res, idToken) => {
     });
 }
 
-const triplistSentData = {
-  'title': 1,
-  'description': 1,
-  'thumbnail': 1,
-  'threads': 1,
-  'numThreads': {
-    $size: '$threads'
-  },
-  'created_at': 1
-}
-
 const selectSorting = (sortBy) => {
   switch (sortBy) {
     case 'most':
-      return { 'numThreads': -1 }
+      return { 'num_threads': -1 }
     case 'newest': // modified in figma
       return { 'created_at': -1 }
     case 'latest':
       return { 'threads.added': -1 }
-    case 'upvoted':
+    case 'vote':
       return { 'threads.vote': -1 }
     case 'popular':
       return { 'threads.popularity': -1 }
@@ -106,10 +95,11 @@ const createTriplist = async (req, res, uid, thread) => {
       description: req.body.description,
       thumbnail: req.body.thumbnail,
       threads: thread,
+      num_threads: thread.length,
       created_at: new Date()
     })
     .then((triplist) => {
-      res.send(_.pick(triplist, '_id', 'title', 'description', 'thumbnail', 'threads', 'created_at'))
+      res.send(_.pick(triplist, '_id', 'title', 'description', 'thumbnail', 'threads', 'num_threads', 'created_at'))
     })
     .catch((error) => {
       res.status(500).send({
@@ -165,7 +155,16 @@ router.get('/', async (req, res) => {
         $sort: selectSorting(req.query.sortby)
       },
       {
-        $project: triplistSentData
+        $project: {
+          'title': 1,
+          'description': 1,
+          'thumbnail': 1,
+          'threads': 1,
+          'num_threads': {
+            $size: '$threads'
+          },
+          'created_at': 1
+        }
       }
     ])
     .then((triplists) => {
@@ -188,7 +187,6 @@ router.post('/add', async (req, res) => {
 
   var uid = await checkTokenRevoke(res, req.headers.authorization)
   if (!uid) return
-
   await createTriplist(req, res, uid, [])
 })
 
@@ -204,16 +202,19 @@ router.post('/add/:id', async (req, res) => {
   await threadPipeline(req.params.id).then((result) => {
     thread = result
   })
+
   var uid = await checkTokenRevoke(res, req.headers.authorization)
   if (!uid) return
-
   await createTriplist(req, res, uid, thread)
 })
 
 // Get a triplist by id
-router.get('/:id', async (req, res) => {
+router.get('/:id/:page', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
   if (!uid) return
+
+  const page = req.params.page || 1
+  const resultPerPage = 1;
 
   await triplists_col
     .aggregate([
@@ -240,15 +241,29 @@ router.get('/:id', async (req, res) => {
           'description': { '$first': '$description' },
           'thumbnail': { '$first': '$thumbnail' },
           'threads': { '$push': '$threads' },
+          'num_threads': { '$sum': '$num_threads' },
           'created_at': { '$first': '$created_at' }
         }
       },
       {
-        $project: triplistSentData
+        $project: {
+          title: 1,
+          description: 1,
+          thumbnail: 1,
+          threads: {
+            $slice: ['$threads', (resultPerPage * page) - resultPerPage, resultPerPage]
+          },
+          num_threads: 1,
+          created_at: 1
+        }
       }
     ])
-    .then((thread) => {
-      res.send(thread[0])
+    .then((triplist) => {
+      res.send({
+        triplist: triplist[0],
+        total_page: Math.ceil(triplist[0].num_threads / resultPerPage),
+        current_page: page
+      })
     })
     .catch((error) => {
       res.status(500).send({

@@ -7,105 +7,129 @@ const db = require('monk')(process.env.MONGODB_URI, {
 })
 const threads_col = db.get(process.env.MONGODB_THREADS_COLLECTION)
 
-function selectSorting(sortby) {
-  if (sortby == "upvoted") return { "vote": -1 }
-  else if (sortby == "popular") return { "viewvotecom_per_day": -1 }
-  else if (sortby == "newest") return { "created_at": -1 }
-  else if (sortby == "oldest") return { "created_at": 1 }
+const selectSorting = (sortby) => {
+  if (sortby == 'upvoted') return { 'vote': -1 }
+  else if (sortby == 'popular') return { 'viewvotecom_per_day': -1 }
+  else if (sortby == 'newest') return { 'created_at': -1 }
+  else if (sortby == 'oldest') return { 'created_at': 1 }
   else return null
 }
 
-const pipeline = function (conds) {
+const pipeline = function (conds, page) {
+  const resultPerPage = 10;
+
   return [{
     $addFields: {
-      "t_filter": conds.typeFilter,
-      "c_filter": {
+      't_filter': conds.typeFilter,
+      'c_filter': {
         $filter: {
-          input: "$countries",
-          as: "country",
+          input: '$countries',
+          as: 'country',
           cond: {
             $or: conds.countryFilter
           }
         }
       },
-      "d_filter": conds.durationFilter,
-      "m_filter": {
+      'd_filter': conds.durationFilter,
+      'm_filter': {
         $filter: {
-          input: "$month",
-          as: "mon",
+          input: '$month',
+          as: 'mon',
           cond: {
             $or: conds.monthFilter
           }
         }
       },
-      "th_filter": conds.themeFilter,
-      "b_filter": {
+      'th_filter': {
+        $filter: {
+          input: '$theme',
+          as: 'theme',
+          cond: {
+            $or: conds.themeFilter
+          }
+        }
+      },
+      'b_filter': {
         $or: [{
           $and: [{
-            $gte: ["$budget", conds.budgetMin]
+            $gte: ['$budget', conds.budgetMin]
           }, {
-            $lte: ["$budget", conds.budgetMax]
+            $lte: ['$budget', conds.budgetMax]
           }]
         },
         {
-          $eq: ["$budget", -1]
+          $eq: ['$budget', -1]
         }]
       },
     }
   },
   {
     $match: {
-      "t_filter": {
-        "$ne": []
+      't_filter': {
+        '$ne': []
       },
-      "c_filter": {
-        "$ne": []
+      'c_filter': {
+        '$ne': []
       },
-      "d_filter": {
-        "$eq": true
+      'd_filter': {
+        '$eq': true
       },
-      "m_filter": {
-        "$nin": [
+      'm_filter': {
+        '$nin': [
           [], null
         ]
       },
-      "th_filter": {
-        "$nin": [
+      'th_filter': {
+        '$nin': [
           [], false
         ]
       },
-      "b_filter": {
-        "$eq": true
+      'b_filter': {
+        '$eq': true
       }
     }
-  }, {
-    $sort: selectSorting(conds.sortby)
   },
   {
     $project: {
-      "topic_id": 1,
-      "title": 1,
-      "thumbnail": 1,
-      "countries": 1,
-      "duration": 1,
-      "duration_type": 1,
-      "floorBudget": {
-        $floor: "$budget"
+      'topic_id': 1,
+      'title': 1,
+      'thumbnail': 1,
+      'countries': 1,
+      'duration': 1,
+      'duration_type': 1,
+      'floor_budget': {
+        $floor: '$budget'
       },
-      "theme": 1,
-      "view": 1,
-      "vote": 1,
-      "popularity": {
-        $floor: "$viewvotecom_per_day"
+      'theme': 1,
+      'view': 1,
+      'vote': 1,
+      'popularity': {
+        $floor: '$viewvotecom_per_day'
       },
-      "created_at": 1
+      'created_at': 1
     }
   },
   {
-    $skip: 10 * conds.resultPage
+    $sort: selectSorting(conds.sortby)
   },
   {
-    $limit: 50
+    $group: {
+      _id: null,
+      total_page: {
+        $sum: 1
+      },
+      result: {
+        $push: '$$ROOT'
+      }
+    }
+  },
+  {
+    $project: {
+      total_page: 1,
+      result: {
+        $slice: ['$result', (resultPerPage * page) - resultPerPage, resultPerPage]
+      }
+    }
   }]
 }
 
@@ -115,146 +139,141 @@ function getCondition(queryString) {
   // Type
   var type = queryString.type;
   var t_filter = {}
-  if (type == "suggest") {
+  if (type == 'suggest') {
     t_filter = {
-      "$eq": ["$duration_type", null]
+      '$eq': ['$duration_type', null]
     }
-  } else { // null query or review
+  } else {
     t_filter = {
-      "$ne": ["$duration_type", null]
+      '$ne': ['$duration_type', null]
     }
   }
   conds.typeFilter = t_filter
 
   // Country
-  var countries = queryString.countries; // array of string ["Thailand","Singapore"]
+  var countries = queryString.countries
   var c_filter = []
   if (countries) {
     countries.split(',').forEach(country => {
       c_filter.push({
-        "$eq": ["$$country.nameEnglish", country]
+        '$eq': ['$$country.nameEnglish', country]
       })
     })
   } else {
-    c_filter.push(true) // not country == get all
+    c_filter.push(true)
   }
   conds.countryFilter = c_filter
 
   // Duration
-  var duration = queryString.duration_type // int { 1, 2, 3, 4, 5 }
+  var duration = queryString.duration_type
   var d_filter = {}
   if (duration) {
     switch (parseInt(duration)) {
       case 1:
         d_filter = {
-          "$and": [{
-            "$gte": ["$duration.days", 1]
+          '$and': [{
+            '$gte': ['$duration.days', 1]
           }, {
-            "$lte": ["$duration.days", 3]
+            '$lte': ['$duration.days', 3]
           }]
         }
         break;
       case 2:
         d_filter = {
-          "$and": [{
-            "$gte": ["$duration.days", 4]
+          '$and': [{
+            '$gte': ['$duration.days', 4]
           }, {
-            "$lte": ["$duration.days", 6]
+            '$lte': ['$duration.days', 6]
           }]
         }
         break;
       case 3:
         d_filter = {
-          "$and": [{
-            "$gte": ["$duration.days", 7]
+          '$and': [{
+            '$gte': ['$duration.days', 7]
           }, {
-            "$lte": ["$duration.days", 9]
+            '$lte': ['$duration.days', 9]
           }]
         }
         break;
       case 4:
         d_filter = {
-          "$and": [{
-            "$gte": ["$duration.days", 10]
+          '$and': [{
+            '$gte': ['$duration.days', 10]
           }, {
-            "$lte": ["$duration.days", 12]
+            '$lte': ['$duration.days', 12]
           }]
         }
         break;
       case 5:
         d_filter = {
-          "$gt": ["$duration.days", 12]
+          '$gt': ['$duration.days', 12]
         }
         break;
     }
   } else {
-    if (type == "suggest") {
+    if (type == 'suggest') {
       d_filter = {
-        "$eq": ["$duration.days", null]
+        '$eq': ['$duration.days', null]
       }
     } else {
       d_filter = {
-        "$eq": ["$duration.days", 1]
+        '$eq': ['$duration.days', 1]
       }
     }
   }
   conds.durationFilter = d_filter
 
   // Month
-  var month = queryString.months; // array of string ["January", "September"]
+  var month = queryString.months;
   var m_filter = []
   if (month) {
     month.split(',').forEach(mon => {
       m_filter.push({
-        "$eq": ["$$mon", mon]
+        '$eq': ['$$mon', mon]
       })
     })
   } else {
-    m_filter.push(true) //if month == null retrurn all
+    m_filter.push(true)
   }
   conds.monthFilter = m_filter
 
   // Theme
-  var theme = queryString.themes; //array of string ["Mountain","Sea"]
+  var theme = queryString.themes;
+  var th_filter = []
   if (theme) {
-    cond = []
     theme.split(',').forEach(theme => {
-      cond.push({
-        $eq: ["$$theme.theme", theme]
+      th_filter.push({
+        '$and': [{
+          '$eq': ['$$theme.theme', theme]
+        }, {
+          '$gt': ['$$theme.count', 10]
+        }]
       })
     })
-    th_filter = {
-      $filter: {
-        input: "$theme",
-        as: "theme",
-        cond: {
-          $or: cond
-        }
-      }
-    }
-  } else if (theme == "etc") {
-    th_filter = {
-      $eq: ["$theme", []]
-    } // if theme == etc select theme:[]
   } else {
-    th_filter = true // if theme == null not filter theme, 
+    th_filter.push({
+      '$gt': ['$$theme.count', 10]
+    })
   }
   conds.themeFilter = th_filter
 
   conds.budgetMin = queryString.budget_min ? parseInt(queryString.budget_min) : 0;
   conds.budgetMax = queryString.budget_max ? parseInt(queryString.budget_max) : 50000;
-  conds.resultPage = queryString.result_page ? parseInt(queryString.result_page) : 1;
   conds.sortby = queryString.sortby ? queryString.sortby : 'popular';
-  // console.log(conds.budgetMin, conds.budgetMax, conds.resultPage, conds.sortby)
-
   return conds
 }
 
-router.get('/filterQuery', function (req, res) {
+router.get('/filterQuery/:page', async (req, res) => {
+  const page = req.params.page || 1
   conds = getCondition(req.query)
-  threads_col.aggregate(pipeline(conds)).then((doc) => {
-    res.send(doc);
+  threads_col.aggregate(pipeline(conds, page)).then((doc) => {
+    res.send({
+      threads: doc[0].result,
+      total_page: Math.ceil(doc[0].total_page / 10),
+      current_page: page
+    })
   })
-});
+})
 
 module.exports = router

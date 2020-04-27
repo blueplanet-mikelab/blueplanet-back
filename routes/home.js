@@ -9,21 +9,21 @@ const threads_col = db.get(process.env.MONGODB_THREADS_COLLECTION)
 const countries_col = db.get(process.env.MONGODB_MAP_COLLECTION)
 
 const thread_res = {
-  "topic_id": 1,
-  "title": 1,
-  "thumbnail": 1,
-  "duration": 1,
-  "month": 1,
-  "countries": 1,
-  "duration_type": 1
+  'topic_id': 1,
+  'title': 1,
+  'thumbnail': 1,
+  'duration': 1,
+  'month': 1,
+  'countries': 1,
+  'duration_type': 1
 }
 
 const th_selected_conds = {
   $filter: {
-    input: "$countries",
-    as: "country",
+    input: '$countries',
+    as: 'country',
     cond: {
-      "$eq": ["$$country.country", "TH"]
+      '$eq': ['$$country.country', 'TH']
     }
   }
 }
@@ -31,20 +31,20 @@ const th_selected_conds = {
 const suggestionPipeline = function (conds) {
   return [{
     $addFields: {
-      "th_selected": th_selected_conds,
-      "suggest_thread": {
-        "$eq": ["$duration_type", null]
+      'th_selected': th_selected_conds,
+      'suggest_thread': {
+        '$eq': ['$duration_type', null]
       }
     }
   },
   {
-    "$match": {
-      "$and": [{
-        "th_selected": conds.within_th
+    '$match': {
+      '$and': [{
+        'th_selected': conds.within_th
       },
       {
-        "suggest_thread": {
-          "$eq": true
+        'suggest_thread': {
+          '$eq': true
         }
       }
       ]
@@ -61,20 +61,20 @@ const suggestionPipeline = function (conds) {
 const durationPipeline = function (conds) {
   return [{
     $addFields: {
-      "th_selected": th_selected_conds,
-      "d_selected": {
+      'th_selected': th_selected_conds,
+      'd_selected': {
         $or: conds.duration
       }
     }
   },
   {
-    "$match": {
-      "$and": [{
-        "th_selected": conds.within_th
+    '$match': {
+      '$and': [{
+        'th_selected': conds.within_th
       },
       {
-        "d_selected": {
-          "$eq": true
+        'd_selected': {
+          '$eq': true
         }
       }
       ]
@@ -92,11 +92,11 @@ const durationPipeline = function (conds) {
 const monthPipeline = function (conds) {
   return [{
     $addFields: {
-      "th_selected": th_selected_conds,
-      "m_selected": {
+      'th_selected': th_selected_conds,
+      'm_selected': {
         $filter: {
-          input: "$month",
-          as: "mon",
+          input: '$month',
+          as: 'mon',
           cond: {
             $or: conds.month
           }
@@ -105,13 +105,13 @@ const monthPipeline = function (conds) {
     }
   },
   {
-    "$match": {
-      "$and": [{
-        "th_selected": conds.within_th
+    '$match': {
+      '$and': [{
+        'th_selected': conds.within_th
       },
       {
-        "m_selected": {
-          "$nin": [
+        'm_selected': {
+          '$nin': [
             [], null
           ]
         }
@@ -132,11 +132,11 @@ function getWithinThConds(within_th) {
   var conds = {}
   if (parseInt(within_th) == 1) {
     within_th_selected = {
-      "$ne": []
+      '$ne': []
     }
   } else {
     within_th_selected = {
-      "$eq": []
+      '$eq': []
     }
   }
   conds.within_th = within_th_selected
@@ -150,51 +150,51 @@ function getDurationConds(queryString) {
   switch (parseInt(duration)) {
     case 1:
       duration_selected = {
-        "$and": [{
-          "$gte": ["$duration.days", 1]
+        '$and': [{
+          '$gte': ['$duration.days', 1]
         }, {
-          "$lte": ["$duration.days", 3]
+          '$lte': ['$duration.days', 3]
         }]
       }
       break;
     case 2:
       duration_selected = {
-        "$and": [{
-          "$gte": ["$duration.days", 4]
+        '$and': [{
+          '$gte': ['$duration.days', 4]
         }, {
-          "$lte": ["$duration.days", 6]
+          '$lte': ['$duration.days', 6]
         }]
       }
       break;
     case 3:
       duration_selected = {
-        "$and": [{
-          "$gte": ["$duration.days", 7]
+        '$and': [{
+          '$gte': ['$duration.days', 7]
         }, {
-          "$lte": ["$duration.days", 9]
+          '$lte': ['$duration.days', 9]
         }]
       }
       break;
     case 4:
       duration_selected = {
-        "$and": [{
-          "$gte": ["$duration.days", 10]
+        '$and': [{
+          '$gte': ['$duration.days', 10]
         }, {
-          "$lte": ["$duration.days", 12]
+          '$lte': ['$duration.days', 12]
         }]
       }
       break;
     case 5:
       duration_selected = {
-        "$gt": ["$duration.days", 12]
+        '$gt': ['$duration.days', 12]
       }
       break;
     default:
       duration_selected = {
-        "$and": [{
-          "$gte": ["$duration.days", 1]
+        '$and': [{
+          '$gte': ['$duration.days', 1]
         }, {
-          "$lte": ["$duration.days", 3]
+          '$lte': ['$duration.days', 3]
         }]
       }
       break;
@@ -209,7 +209,7 @@ function getMonthQueryConds(queryString) {
   var month = queryString.month
   if (month) {
     month_selected = {
-      "$eq": ["$$mon", month]
+      '$eq': ['$$mon', month]
     }
   } else {
     month_selected = true
@@ -219,7 +219,7 @@ function getMonthQueryConds(queryString) {
 }
 
 router.get('/mapCountries', async function (req, res) {
-  await countries_col.find({}, { sort:{count:-1} } ).then((doc) => {
+  await countries_col.find({}, { sort: { count: -1 } }).then((doc) => {
     res.send(doc)
   })
 })
