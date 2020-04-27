@@ -93,10 +93,8 @@ const updateRecentThread = async (res, filter, operator) => {
 }
 
 router.get('/', async (req, res) => {
-  // var uid = await checkTokenRevoke(res, req.headers.authorization)
-  // if (!uid) return
-
-  var uid = 'p4TzOYEO4hUps4J74DpJG5sGJYs2'
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   await recently_viewed_col
     .aggregate([
@@ -143,10 +141,8 @@ router.get('/', async (req, res) => {
 })
 
 router.put('/:id', async (req, res) => {
-  // var uid = await checkTokenRevoke(res, req.headers.authorization)
-  // if (!uid) return
-
-  var uid = 'p4TzOYEO4hUps4J74DpJG5sGJYs2'
+  var uid = await checkTokenRevoke(res, req.headers.authorization)
+  if (!uid) return
 
   if (await isAdded(uid, req.params.id) === true) {
     await updateRecentThread(res,
