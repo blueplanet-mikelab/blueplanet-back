@@ -217,6 +217,7 @@ router.post('/add', upload.single('thumbnail'), async (req, res) => {
 
   var uid = await checkTokenRevoke(res, req.headers.authorization)
   if (!uid) return
+
   await createTriplist(req, res, uid, [])
 })
 
