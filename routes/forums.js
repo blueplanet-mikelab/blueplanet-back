@@ -9,7 +9,7 @@ const threads_col = db.get(process.env.MONGODB_THREADS_COLLECTION)
 
 const selectSorting = (sortby) => {
   if (sortby == 'upvoted') return { 'vote': -1 }
-  else if (sortby == 'popular') return { 'viewvotecom_per_day': -1 }
+  else if (sortby == 'popular') return { 'popularity': -1 }
   else if (sortby == 'newest') return { 'created_at': -1 }
   else if (sortby == 'oldest') return { 'created_at': 1 }
   else return null
@@ -66,7 +66,7 @@ const pipeline = function (conds, page) {
   {
     $match: {
       't_filter': {
-        '$ne': []
+        '$eq': true
       },
       'c_filter': {
         '$ne': []
@@ -165,8 +165,7 @@ function getCondition(queryString) {
   conds.countryFilter = c_filter
 
   // Duration
-  var duration = queryString.duration_type
-  var d_filter = {}
+  var duration = type == 'suggest' ? null : queryString.duration_type
   if (duration) {
     switch (parseInt(duration)) {
       case 1:
@@ -212,14 +211,8 @@ function getCondition(queryString) {
         break;
     }
   } else {
-    if (type == 'suggest') {
-      d_filter = {
-        '$eq': ['$duration.days', null]
-      }
-    } else {
-      d_filter = {
-        '$eq': ['$duration.days', 1]
-      }
+    d_filter = {
+      '$eq': ['$duration_type', null]
     }
   }
   conds.durationFilter = d_filter

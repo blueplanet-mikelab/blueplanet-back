@@ -38,7 +38,7 @@ const suggestionPipeline = function (conds) {
     }
   },
   {
-    '$match': {
+    $match: {
       '$and': [{
         'th_selected': conds.within_th
       },
