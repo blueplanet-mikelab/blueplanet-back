@@ -66,7 +66,7 @@ const pipeline = function (conds, page) {
   {
     $match: {
       't_filter': {
-        '$eq': true
+        '$ne': []
       },
       'c_filter': {
         '$ne': []
@@ -165,8 +165,13 @@ function getCondition(queryString) {
   conds.countryFilter = c_filter
 
   // Duration
-  var duration = type == 'suggest' ? null : queryString.duration_type
-  if (duration) {
+  var duration = queryString.duration_type
+  var d_filter = {}
+  if (type == 'suggest') {
+    d_filter = {
+      '$eq': ['$duration_type', null]
+    }
+  } else {
     switch (parseInt(duration)) {
       case 1:
         d_filter = {
@@ -209,10 +214,15 @@ function getCondition(queryString) {
           '$gt': ['$duration.days', 12]
         }
         break;
-    }
-  } else {
-    d_filter = {
-      '$eq': ['$duration_type', null]
+      default:
+        d_filter = {
+          '$and': [{
+            '$gte': ['$duration.days', 1]
+          }, {
+            '$lte': ['$duration.days', 3]
+          }]
+        }
+        break;
     }
   }
   conds.durationFilter = d_filter
