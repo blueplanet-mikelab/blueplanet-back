@@ -96,48 +96,63 @@ const updateRecentThread = async (res, filter, operator) => {
 router.get('/', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
   if (!uid) return
-
+  
   await recently_viewed_col
-    .aggregate([
-      {
-        $match: {
-          uid: uid
-        }
-      },
-      {
-        $unwind: {
-          'path': '$threads',
-          'preserveNullAndEmptyArrays': true
-        }
-      },
-      {
-        $sort: {
-          'threads.added': -1
-        }
-      },
-      {
-        $group: {
-          '_id': '$_id',
-          'uid': { '$first': '$uid' },
-          'threads': { '$push': '$threads' }
-        }
-      },
-      {
-        $project: {
-          'threads': 1,
-        }
-      },
-      {
-        $limit: 20
+    .find({ uid: uid })
+    .then((recently_viewed) => {
+      if (recently_viewed.length == 0) {
+        const empty = [];
+        recently_viewed_col.insert({
+          uid: uid,
+          threads: empty
+        })
+          .then((recently_viewed) => {
+            res.send(_.pick(recently_viewed, '_id', 'threads'))
+          })
+      } else {
+        recently_viewed_col
+          .aggregate([
+            {
+              $match: {
+                uid: uid
+              }
+            },
+            {
+              $unwind: {
+                'path': '$threads',
+                'preserveNullAndEmptyArrays': true
+              }
+            },
+            {
+              $sort: {
+                'threads.added': -1
+              }
+            },
+            {
+              $group: {
+                '_id': '$_id',
+                'uid': { '$first': '$uid' },
+                'threads': { '$push': '$threads' }
+              }
+            },
+            {
+              $project: {
+                'threads': 1,
+              }
+            },
+            {
+              $limit: 20
+            }
+          ])
+          .then((threads) => {
+            res.send(threads[0].threads)
+          })
+          .catch((error) => {
+            res.status(500).send({
+              message: error.message
+            })
+          })
       }
-    ])
-    .then((threads) => {
-      res.send(threads[0].threads)
-    })
-    .catch((error) => {
-      res.status(500).send({
-        message: error.message
-      })
     })
 })
 
