@@ -21,7 +21,6 @@ app.use(bodyParser.urlencoded({
 }));
 app.listen(PORT, () => console.log('Server is running on Port: ' + PORT))
 
-app.use('/public/', express.static('public'))
 app.use('/api/home', homeRoute)
 app.use('/api/forums', forumsRoute)
 app.use('/api/users', usersRoute)

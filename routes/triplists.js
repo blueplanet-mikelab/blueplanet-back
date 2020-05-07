@@ -12,9 +12,6 @@ const triplists_col = db.get(process.env.MONGODB_TRIPLISTS_COLLECTION)
 
 const admin = require('../firebase-admin')
 
-// const multer = require('multer')
-// const uuidv4 = require('uuid/v4');
-
 const checkTokenRevoke = async (res, idToken) => {
   if (!idToken) {
     res.status(401).send({
@@ -90,34 +87,7 @@ const threadPipeline = async (id) => {
     })
 }
 
-// const DIR = './public/'
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, DIR)
-//   },
-//   filename: (req, file, cb) => {
-//     const fileName = file.originalname.toLowerCase().split(' ').join('-');
-//     cb(null, uuidv4() + '-' + fileName)
-//   }
-// })
-
-// const upload = multer({
-//   storage: storage,
-//   fileFilter: (req, file, cb) => {
-//     if (file.mimetype == 'image/png' || file.mimetype == 'image/jpg' || file.mimetype == 'image/jpeg') {
-//       cb(null, true);
-//     } else {
-//       cb(null, false);
-//       return cb(new Error('Only .png, .jpg and .jpeg format allowed.'));
-//     }
-//   }
-// })
-
-
 const createTriplist = async (req, res, uid, thread) => {
-  // const url = req.protocol + '://' + req.get('host')
-  // const thumbnail = url + '/public/' + req.file.filename
-
   await triplists_col
     .insert({
       uid: uid,
@@ -236,6 +206,7 @@ router.post('/add/:id', async (req, res) => {
 
   var uid = await checkTokenRevoke(res, req.headers.authorization)
   if (!uid) return
+
   await createTriplist(req, res, uid, thread)
 })
 
@@ -314,22 +285,13 @@ router.put('/:id', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
   if (!uid) return
 
-  const url = req.protocol + '://' + req.get('host')
-  const thumbnail = url + '/public/' + req.file.filename
-
-  var updated = {
-    title: req.body.title,
-    description: req.body.description,
-    thumbnail: thumbnail
-  }
-
   await updateTriplist(res,
     {
       _id: db.id(req.params.id),
       uid: uid
     },
     {
-      $set: updated
+      $set: req.body
     })
 })
 
