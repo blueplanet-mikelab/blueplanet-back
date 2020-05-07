@@ -49,6 +49,7 @@ const threadPipeline = async (id) => {
       $project: {
         'topic_id': 1,
         'title': 1,
+        'thumbnail': 1,
         'added': {
           $add: new Date()
         }
