@@ -189,7 +189,7 @@ router.get('/:page', async (req, res) => {
 })
 
 // Get boolean of a thread if it has been added by id
-router.get('/:id', async (req, res) => {
+router.get('/check/:id', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
   if (!uid) return
 

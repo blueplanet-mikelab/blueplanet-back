@@ -579,7 +579,7 @@ Get boolean of a thread if it has been added by id
 true
 ```
 
-### 11. PUT /api/my-triplist/favorites/:id
+### 11. PUT /api/my-triplist/favorites/check/:id
 Add a thread to favorite
 
 #### Request
