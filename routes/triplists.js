@@ -152,9 +152,6 @@ router.get('/', async (req, res) => {
         }
       },
       {
-        $sort: selectSorting(req.query.sortby)
-      },
-      {
         $project: {
           'title': 1,
           'description': 1,
@@ -165,6 +162,9 @@ router.get('/', async (req, res) => {
           },
           'created_at': 1
         }
+      },
+      {
+        $sort: selectSorting(req.query.sortby)
       }
     ])
     .then((triplists) => {
