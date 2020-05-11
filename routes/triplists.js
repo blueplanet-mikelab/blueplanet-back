@@ -85,6 +85,9 @@ const threadPipeline = async (id) => {
     .then((thread) => {
       return thread
     })
+    .catch((error) => {
+      console.log(error)
+    })
 }
 
 const createTriplist = async (req, res, uid, thread) => {

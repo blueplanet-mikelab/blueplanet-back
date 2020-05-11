@@ -81,6 +81,9 @@ const threadPipeline = async (id) => {
     .then((thread) => {
       return thread
     })
+    .catch((error) => {
+      console.log(error)
+    })
 }
 
 const updateFavThread = async (res, uid, operator, message) => {

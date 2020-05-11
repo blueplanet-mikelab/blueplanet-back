@@ -63,6 +63,9 @@ const threadPipeline = async (id) => {
     .then((thread) => {
       return thread
     })
+    .catch((error) => {
+      console.log(error)
+    })
 }
 
 const isAdded = async (uid, id) => {
