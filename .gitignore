@@ -107,3 +107,5 @@ public/
 
 # firebase generated key
 serviceAccountKey.json
+
+/config

@@ -1,11 +1,11 @@
 const express = require('express')
-const fs = require('fs');
 const router = express.Router()
 require('dotenv').config()
 const db = require('monk')(process.env.MONGODB_URI, {
   authSource: 'admin'
 })
-const threads_col = db.get(process.env.MONGODB_THREADS_COLLECTION)
+const col = require('../config/collection.json')
+const threads_col = db.get(col.collection_threads)
 
 const selectSorting = (sortby) => {
   if (sortby == 'upvoted') return { 'vote': -1 }

@@ -1,5 +1,4 @@
 const express = require('express')
-const fs = require('fs')
 const router = express.Router()
 const _ = require('lodash')
 require('dotenv').config()
@@ -7,7 +6,8 @@ require('dotenv').config()
 const db = require('monk')(process.env.MONGODB_URI, {
   authSource: 'admin'
 })
-const threads_col = db.get(process.env.MONGODB_THREADS_COLLECTION)
+const col = require('../config/collection.json')
+const threads_col = db.get(col.collection_threads)
 const recently_viewed_col = db.get(process.env.MONGODB_RECENTLY_VIEWED_COLLECTION)
 
 const admin = require('../firebase-admin')
