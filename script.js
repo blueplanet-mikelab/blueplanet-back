@@ -19,7 +19,6 @@ threads_col.find({}).then((doc) => {
   if (doc.length != 0) {
     var collection = JSON.parse(fs.readFileSync('./config/collection.json').toString())
     collection['collection_threads'] = collection.collection_threads.replaceBetween(18, 28, current_date)
-    fs.writeFile('./config/collection.json', JSON.stringify(collection), (error) => {})
-    console.log('here')
+    fs.writeFile('./config/collection.json', JSON.stringify(collection), (error) => { })
   }
 })
