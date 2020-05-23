@@ -100,7 +100,18 @@ const pipeline = function (conds, page) {
       'floor_budget': {
         $floor: '$budget'
       },
-      'theme': 1,
+      'theme': {
+        $cond: {
+          if: {
+            $eq: [[], '$th_filter']
+          },
+          then: {
+            $arrayElemAt: ['$theme', 0]
+          },
+          else: '$th_filter'
+        }
+      },
+      // 'theme': 1,
       'view': 1,
       'vote': 1,
       'popularity': {
@@ -250,13 +261,13 @@ function getCondition(queryString) {
         '$and': [{
           '$eq': ['$$theme.theme', theme]
         }, {
-          '$gt': ['$$theme.count', 10]
+          '$gte': ['$$theme.count', 5]
         }]
       })
     })
   } else {
     th_filter.push({
-      '$gt': ['$$theme.count', 10]
+      '$gte': ['$$theme.count', 5]
     })
   }
   conds.themeFilter = th_filter
