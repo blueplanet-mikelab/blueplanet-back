@@ -1,8 +1,7 @@
+require('dotenv').config()
 const express = require('express')
 const router = express.Router()
 const _ = require('lodash')
-require('dotenv').config()
-
 const db = require('monk')(process.env.MONGODB_URI, {
   authSource: 'admin'
 })

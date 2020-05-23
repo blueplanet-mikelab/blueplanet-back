@@ -1,6 +1,6 @@
+require('dotenv').config()
 const express = require('express')
 const router = express.Router()
-require('dotenv').config()
 const db = require('monk')(process.env.MONGODB_URI, {
   authSource: 'admin'
 })
@@ -225,6 +225,7 @@ router.get('/mapCountries', async function (req, res) {
 })
 
 router.get('/suggestThreads', async function (req, res) {
+  const script = require('../config/script').checkCol()
   var conds = getWithinThConds(req.query.within_th)
   await threads_col.aggregate(suggestionPipeline(conds)).then((doc) => {
     res.send(doc)
@@ -232,6 +233,7 @@ router.get('/suggestThreads', async function (req, res) {
 })
 
 router.get('/durationQuery', async function (req, res) {
+  const script = require('../config/script').checkCol()
   durationConds = getDurationConds(req.query)
   await threads_col.aggregate(durationPipeline(durationConds)).then((doc) => {
     res.send(doc)
@@ -239,6 +241,7 @@ router.get('/durationQuery', async function (req, res) {
 })
 
 router.get('/monthQuery', async function (req, res) {
+  const script = require('../config/script').checkCol()
   monthConds = getMonthQueryConds(req.query)
   await threads_col.aggregate(monthPipeline(monthConds)).then((doc) => {
     res.send(doc)

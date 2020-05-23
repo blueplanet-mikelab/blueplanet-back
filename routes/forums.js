@@ -1,6 +1,6 @@
+require('dotenv').config()
 const express = require('express')
 const router = express.Router()
-require('dotenv').config()
 const db = require('monk')(process.env.MONGODB_URI, {
   authSource: 'admin'
 })
@@ -279,6 +279,7 @@ function getCondition(queryString) {
 }
 
 router.get('/:page/filter', async (req, res) => {
+  const script = require('../config/script').checkCol()
   const page = req.params.page || 1
   conds = getCondition(req.query)
   threads_col.aggregate(pipeline(conds, page)).then((doc) => {
