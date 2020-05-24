@@ -1,8 +1,7 @@
+require('dotenv').config()
 const express = require('express')
 const router = express.Router()
 const _ = require('lodash')
-require('dotenv').config()
-
 const db = require('monk')(process.env.MONGODB_URI, {
   authSource: 'admin'
 })
@@ -99,7 +98,7 @@ const updateRecentThread = async (res, filter, operator) => {
 router.get('/', async (req, res) => {
   var uid = await checkTokenRevoke(res, req.headers.authorization)
   if (!uid) return
-  
+
   await recently_viewed_col
     .find({ uid: uid })
     .then((recently_viewed) => {
