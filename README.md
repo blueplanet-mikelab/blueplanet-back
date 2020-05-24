@@ -1,4 +1,21 @@
-# Blueplanet project installation
+# Blueplanet project
+![Imgur](https://i.imgur.com/qX4KCRY.jpg)
+
+## Project trailer: 
+https://youtu.be/E7XD336SghY<br>
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=E7XD336SghY
+" target="_blank"><img src="http://img.youtube.com/vi/E7XD336SghY/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+
+## Project presentation: 
+https://www.youtube.com/watch?v=gHh1ErghylY<br>
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=gHh1ErghylY
+" target="_blank"><img src="http://img.youtube.com/vi/gHh1ErghylY/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+
+## Short description
+This web application is developed in order to solve the difficulty of finding review posts/threads which are used as information for planning trips. At present, while planning a trip, Thai people always search for interesting travel reviews, especially the review threads of Pantip.com which are very popular in Thailand. However, not every post will match their needs. Sometimes, they have to read up to 10 threads, but just only one thread can be used. Therefore, our web application is classifying threads so that users are able to filter only the threads they want. Moreover, the application provides other services such as suggesting posts and creating your favorite triplist.
+
 This project consist of 3 repositories
 1. Front-end: https://gitlab.mikelab.net:65443/blueplanet/fontend is about the user interface.
 2. Back-end: https://gitlab.mikelab.net:65443/blueplanet/backend (this repository) is a bridge between front-end and database. It is used to send data from database to front-end and receive data from front-end to keep in database.
@@ -7,7 +24,11 @@ This project consist of 3 repositories
 **After finish installation,** to play a web application, you need to execute back-end first by run command `nodemon server.js` on the back-end directory. Then, go to the front-end directory and run `yarn start`. There is no need to run **Analytic repository** to play the web application.
 
 # Installation
-Video Guide: [https://youtu.be/GQMlnH3kOjc](https://youtu.be/GQMlnH3kOjc)
+Video Guide: [https://youtu.be/GQMlnH3kOjc](https://youtu.be/GQMlnH3kOjc)<br>
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=GQMlnH3kOjc
+" target="_blank"><img src="http://img.youtube.com/vi/GQMlnH3kOjc/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+
 
 ## 0) Prerequisites
 Front-end: NodeJS<br>
@@ -158,4 +179,3 @@ The main file of threads classification.
 
 **13. scheduleClassify.py**<br>
 is used to automatically call a classification function every day for data updating.
-
