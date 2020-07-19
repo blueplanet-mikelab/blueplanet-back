@@ -16,7 +16,7 @@
     "crypto": "^1.0.1",
     "express": "^4.17.1",
     "firebase-admin": "^8.10.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "monk": "^7.1.2",
     "saslprep": "^1.0.3"
   },
